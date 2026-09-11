@@ -1,0 +1,20 @@
+{
+  "/statements": {
+    "target": "http://127.0.0.1:3000",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
+  "/matching": {
+    "target": "http://127.0.0.1:3000",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
+  "/parties": {
+    "target": "http://127.0.0.1:3000",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  }
+}

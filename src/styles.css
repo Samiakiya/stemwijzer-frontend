@@ -1,0 +1,6 @@
+@import url("./styles/reset.css");
+@import url("./styles/variables.css");
+
+* {
+  box-sizing: border-box;
+}
