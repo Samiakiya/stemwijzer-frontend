@@ -1,2 +1,32 @@
-// TODO: bouw de Angular-component voor alle gedeelde knopvarianten, statussen, iconen en laadgedrag.
-// Leg publieke inputs en outputs expliciet vast en houd data-ophalen buiten deze component.
+import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+
+export type ButtonVariant = 'primary' | 'secondary';
+export type ButtonType = 'button' | 'submit';
+
+@Component({
+  selector: 'stw-button',
+  templateUrl: './button.component.html',
+  styleUrl: './button.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class ButtonComponent {
+  public readonly variant = input<ButtonVariant>('primary');
+
+  public readonly type = input<ButtonType>('button');
+
+  public readonly disabled = input(false);
+
+  public readonly loading = input(false);
+
+  public readonly fullWidth = input(false);
+
+  public readonly buttonClick = output();
+
+  protected handleClick(): void {
+    if (this.disabled() || this.loading()) {
+      return;
+    }
+
+    this.buttonClick.emit();
+  }
+}

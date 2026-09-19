@@ -1,1 +1,4 @@
-// TODO: definieer hier uitsluitend niet-geheime instellingen voor lokale ontwikkeling.
+export const environment = {
+  production: false,
+  apiBaseUrl: '',
+};

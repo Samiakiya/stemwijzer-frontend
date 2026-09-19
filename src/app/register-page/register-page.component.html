@@ -1,0 +1,27 @@
+<main class="page">
+  <div class="card">
+    <stw-brand-mark heading="Registreren" />
+    @if (!registerSucceeded()) {
+      <stw-register-form (submitRegister)="handleRegister($event)" [loading]="loading()" />
+    }
+    @if (errorMessage(); as message) {
+      <stw-security-notice variant="error">{{ message }}</stw-security-notice>
+    } @else if (registerSucceeded()) {
+      <stw-security-notice variant="info">
+        Je account is aangemaakt. Je kunt nu inloggen.
+      </stw-security-notice>
+      <a class="switch-link-button" routerLink="/login">Ga naar inloggen</a>
+    } @else {
+      <stw-security-notice variant="info">
+        Deze omgeving is uitsluitend bedoeld voor bevoegde ProDemos-beheerders. Alle aanvragen worden vastgelegd.
+      </stw-security-notice>
+    }
+    @if (!registerSucceeded()) {
+      <p class="switch-link">
+        Heb je al een account?
+        <a routerLink="/login">Log hier in</a>
+      </p>
+    }
+  </div>
+  <p class="footer">© {{ currentYear }} ProDemos</p>
+</main>

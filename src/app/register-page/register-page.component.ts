@@ -2,36 +2,36 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { RouterLink } from '@angular/router';
 import { BrandMarkComponent } from '../components/brand-mark/brand-mark.component';
 import { SecurityNoticeComponent } from '../components/security-notice/security-notice.component';
-import { LoginFormComponent } from './components/login-form/login-form.component';
-import type { LoginCredentials } from './login-page.interfaces';
-import { LoginPageService } from './login-page.service';
+import { RegisterFormComponent } from './components/register-form/register-form.component';
+import type { RegisterDetails } from './register-page.interfaces';
+import { RegisterPageService } from './register-page.service';
 
 @Component({
-  selector: 'stw-login-page',
-  imports: [BrandMarkComponent, SecurityNoticeComponent, LoginFormComponent, RouterLink],
-  templateUrl: './login-page.component.html',
-  styleUrl: './login-page.component.css',
+  selector: 'stw-register-page',
+  imports: [BrandMarkComponent, SecurityNoticeComponent, RegisterFormComponent, RouterLink],
+  templateUrl: './register-page.component.html',
+  styleUrl: './register-page.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class LoginPageComponent {
+export class RegisterPageComponent {
   protected readonly loading = signal(false);
 
   protected readonly errorMessage = signal<string | null>(null);
 
-  protected readonly loginSucceeded = signal(false);
+  protected readonly registerSucceeded = signal(false);
 
   protected readonly currentYear = new Date().getFullYear();
 
-  private readonly loginPageService = inject(LoginPageService);
+  private readonly registerPageService = inject(RegisterPageService);
 
-  protected handleLogin(credentials: LoginCredentials): void {
+  protected handleRegister(details: RegisterDetails): void {
     this.loading.set(true);
     this.errorMessage.set(null);
 
-    this.loginPageService.login(credentials).subscribe({
+    this.registerPageService.register(details).subscribe({
       next: () => {
         this.loading.set(false);
-        this.loginSucceeded.set(true);
+        this.registerSucceeded.set(true);
       },
       error: (error: unknown) => {
         this.loading.set(false);

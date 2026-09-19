@@ -1,1 +1,40 @@
-// TODO: plaats hier de authenticatie-aanroepen en sessieafhandeling voor de inlogpagina.
+import { HttpErrorResponse } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import type { Observable } from 'rxjs';
+import { catchError, map, throwError } from 'rxjs';
+import { ApiService } from '../services/api.service';
+import { AuthService } from '../services/auth.service';
+import type { LoginCredentials, LoginResponse } from './login-page.interfaces';
+
+const UNAUTHORIZED_STATUS = 401;
+const INVALID_CREDENTIALS_MESSAGE = 'Onjuiste combinatie van e-mailadres en wachtwoord.';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class LoginPageService {
+  private readonly api = inject(ApiService);
+
+  private readonly auth = inject(AuthService);
+
+  public login(credentials: LoginCredentials): Observable<void> {
+    return this.api.post<LoginResponse>('/auth/login', credentials).pipe(
+      map((response) => {
+        this.auth.startSession({ token: response.token, email: credentials.email }, credentials.rememberMe);
+      }),
+      catchError((error: unknown) => throwError(() => this.toUserFacingError(error))),
+    );
+  }
+
+  private toUserFacingError(error: unknown): Error {
+    if (error instanceof HttpErrorResponse && error.status === UNAUTHORIZED_STATUS) {
+      return new Error(INVALID_CREDENTIALS_MESSAGE);
+    }
+
+    if (error instanceof Error) {
+      return error;
+    }
+
+    return new Error(INVALID_CREDENTIALS_MESSAGE);
+  }
+}

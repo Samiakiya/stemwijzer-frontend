@@ -1,0 +1,53 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: var(--space-6);
+  background: linear-gradient(180deg, var(--color-background-from) 0%, var(--color-background-to) 100%);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  width: 100%;
+  max-width: 26rem;
+  padding: var(--space-8) var(--space-8);
+  background-color: var(--color-surface);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+}
+
+.switch-link {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.switch-link a {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-accent-blue);
+}
+
+.switch-link a:hover {
+  text-decoration: underline;
+}
+
+.switch-link-button {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-accent-blue);
+  text-align: center;
+}
+
+.switch-link-button:hover {
+  text-decoration: underline;
+}
+
+.footer {
+  margin-top: var(--space-6);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
