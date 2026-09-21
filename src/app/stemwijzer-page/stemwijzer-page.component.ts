@@ -1,7 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import type { OnInit } from '@angular/core';
 import type { Answer } from '../types/answer.interface';
+import type { AnswerSummary, MatchingResult } from '../types/matching.interface';
 import type { Statement } from '../types/statement.interface';
+import { ResultsComponent } from './components/results/results.component';
 import { StemwijzerPageService } from './stemwijzer-page.service';
 
 const TOTAL_STATEMENTS = 30;
@@ -21,6 +23,7 @@ const TOPICS: readonly { readonly keywords: readonly string[], readonly label: s
 
 @Component({
   selector: 'stw-stemwijzer-page',
+  imports: [ResultsComponent],
   templateUrl: './stemwijzer-page.component.html',
   styleUrl: './stemwijzer-page.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -40,6 +43,12 @@ export class StemwijzerPageComponent implements OnInit {
 
   protected readonly feedbackMessage = signal<string | null>(null);
 
+  protected readonly submittingResults = signal(false);
+
+  protected readonly matchingError = signal<string | null>(null);
+
+  protected readonly matchingResult = signal<MatchingResult | null>(null);
+
   protected readonly totalStatements = TOTAL_STATEMENTS;
 
   protected readonly progressLabel = computed(() => `${this.currentIndex() + 1} van ${TOTAL_STATEMENTS}`);
@@ -53,9 +62,28 @@ export class StemwijzerPageComponent implements OnInit {
     return topic?.label ?? 'Politiek & samenleving';
   });
 
+  protected readonly answerSummary = computed<AnswerSummary>(() => {
+    this.answerRevision();
+
+    const values = [...this.answers.values()];
+    const skipped = this.skippedStatementIds.size;
+
+    return {
+      agree: values.filter(answer => answer === 'eens').length,
+      neutral: values.filter(answer => answer === 'neutraal').length - skipped,
+      disagree: values.filter(answer => answer === 'oneens').length,
+      skipped,
+      total: TOTAL_STATEMENTS,
+    };
+  });
+
   private readonly service = inject(StemwijzerPageService);
 
   private readonly answers = new Map<number, Answer>();
+
+  private readonly skippedStatementIds = new Set<number>();
+
+  private readonly answerRevision = signal(0);
 
   public ngOnInit(): void {
     this.loadStatement(0);
@@ -77,22 +105,45 @@ export class StemwijzerPageComponent implements OnInit {
     }
 
     if (answer === null) {
+      this.answers.set(currentStatement.id, 'neutraal');
+      this.skippedStatementIds.add(currentStatement.id);
       this.showFeedback('Stelling overgeslagen');
     }
     else {
       this.answers.set(currentStatement.id, answer);
+      this.skippedStatementIds.delete(currentStatement.id);
       this.showFeedback(this.feedbackFor(answer));
     }
+
+    this.answerRevision.update(revision => revision + 1);
 
     const nextIndex = this.currentIndex() + 1;
 
     if (nextIndex < TOTAL_STATEMENTS) {
       this.loadStatement(nextIndex);
+
+      return;
     }
+
+    this.submitMatching();
   }
 
   protected retry(): void {
     this.loadStatement(this.currentIndex());
+  }
+
+  protected retryMatching(): void {
+    this.submitMatching();
+  }
+
+  protected restartQuestionnaire(): void {
+    this.answers.clear();
+    this.skippedStatementIds.clear();
+    this.answerRevision.update(revision => revision + 1);
+    this.matchingResult.set(null);
+    this.matchingError.set(null);
+    this.feedbackMessage.set(null);
+    this.loadStatement(0);
   }
 
   protected toggleExplanation(): void {
@@ -142,6 +193,24 @@ export class StemwijzerPageComponent implements OnInit {
     }
 
     return 'Oneens geregistreerd';
+  }
+
+  private submitMatching(): void {
+    const answers = [...this.answers.entries()].map(([statementId, answer]) => ({ statementId, answer }));
+
+    this.submittingResults.set(true);
+    this.matchingError.set(null);
+
+    this.service.getMatchingResults(answers).subscribe({
+      next: (result) => {
+        this.submittingResults.set(false);
+        this.matchingResult.set(result);
+      },
+      error: () => {
+        this.submittingResults.set(false);
+        this.matchingError.set('De uitslag kon niet worden berekend. Probeer het opnieuw.');
+      },
+    });
   }
 
   private showFeedback(message: string): void {

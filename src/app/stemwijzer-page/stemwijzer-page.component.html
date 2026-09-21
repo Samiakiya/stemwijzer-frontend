@@ -1,3 +1,10 @@
+@if (matchingResult(); as result) {
+  <stw-results
+    (restart)="restartQuestionnaire()"
+    [answerSummary]="answerSummary()"
+    [matchingResult]="result"
+  />
+} @else {
 <header class="session-header">
   <div class="header-content">
     <button
@@ -36,7 +43,21 @@
       </svg>
     </div>
 
-    @if (loading()) {
+    @if (submittingResults()) {
+      <div aria-live="polite" class="statement-card result-loading-card">
+        <span aria-hidden="true" class="result-loading-icon">✦</span>
+        <h2>Jouw uitslag wordt berekend</h2>
+        <p>We vergelijken je antwoorden met de standpunten van de partijen.</p>
+        <span aria-hidden="true" class="loading-line"></span>
+      </div>
+    } @else if (matchingError(); as message) {
+      <div aria-live="assertive" class="statement-card error-card">
+        <span aria-hidden="true" class="icon error-icon">!</span>
+        <h2>Uitslag niet beschikbaar</h2>
+        <p>{{ message }}</p>
+        <button class="retry-button" type="button" (click)="retryMatching()">Opnieuw berekenen</button>
+      </div>
+    } @else if (loading()) {
       <div aria-live="polite" class="statement-card loading-card">
         <span aria-hidden="true" class="loading-line short"></span>
         <span aria-hidden="true" class="loading-line"></span>
@@ -140,4 +161,5 @@
     <span aria-hidden="true" class="icon">✓</span>
     {{ feedback }}
   </div>
+}
 }
