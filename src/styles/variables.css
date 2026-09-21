@@ -1,1 +1,20 @@
-/* De design-tokens worden toegevoegd zodra het design bekend is. */
+:root {
+  --color-primary: #00288e;
+  --color-on-primary: #fff;
+  --color-surface: #f8f9ff;
+  --color-surface-card: #fff;
+  --color-surface-soft: #e5eeff;
+  --color-surface-raised: #dce9ff;
+  --color-on-surface: #0b1c30;
+  --color-on-surface-muted: #444653;
+  --color-outline-soft: #e1e6f0;
+  --color-agree: #006d30;
+  --color-on-agree: #fff;
+  --color-neutral: #d3e4fe;
+  --color-disagree: #700006;
+  --color-on-disagree: #fff;
+  --color-toast: #213145;
+  --color-on-toast: #eaf1ff;
+  --content-width: 54rem;
+  --page-gutter: 1rem;
+}
