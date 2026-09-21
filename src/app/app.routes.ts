@@ -11,10 +11,6 @@ export const routes: Routes = [
     loadChildren: async () => import('./login-page/login-page.routes').then(module => module.routes),
   },
   {
-    path: 'register',
-    loadChildren: async () => import('./register-page/register-page.routes').then(module => module.routes),
-  },
-  {
     path: '**',
     redirectTo: 'login',
   },

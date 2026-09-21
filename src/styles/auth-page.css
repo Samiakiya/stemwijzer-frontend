@@ -16,32 +16,6 @@
   padding: calc(var(--space-8) + env(safe-area-inset-top, 0px)) var(--space-6) var(--space-6);
 }
 
-.switch-link {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
-  text-align: center;
-}
-
-.switch-link a {
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-accent-blue);
-}
-
-.switch-link a:hover {
-  text-decoration: underline;
-}
-
-.switch-link-button {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-accent-blue);
-  text-align: center;
-}
-
-.switch-link-button:hover {
-  text-decoration: underline;
-}
-
 .footer {
   margin-top: auto;
   padding: var(--space-4) var(--space-6) calc(var(--space-6) + env(safe-area-inset-bottom, 0px));

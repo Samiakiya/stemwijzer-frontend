@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import { BrandMarkComponent } from '../components/brand-mark/brand-mark.component';
 import { SecurityNoticeComponent } from '../components/security-notice/security-notice.component';
 import { LoginFormComponent } from './components/login-form/login-form.component';
@@ -8,7 +7,7 @@ import { LoginPageService } from './login-page.service';
 
 @Component({
   selector: 'stw-login-page',
-  imports: [BrandMarkComponent, SecurityNoticeComponent, LoginFormComponent, RouterLink],
+  imports: [BrandMarkComponent, SecurityNoticeComponent, LoginFormComponent],
   templateUrl: './login-page.component.html',
   styleUrl: './login-page.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
