@@ -42,6 +42,14 @@
   background-color: var(--color-field-background);
 }
 
+.button-danger {
+  background-color: var(--color-danger);
+}
+
+.button-danger:hover {
+  background-color: var(--color-accent-red);
+}
+
 .button-full-width {
   width: 100%;
 }
