@@ -1,25 +1,23 @@
 import type { OnInit } from '@angular/core';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import type { DropdownOption } from '../../../components/dropdown/dropdown.component';
+import { ConfirmationDialogComponent } from '../../../components/confirmation-dialog/confirmation-dialog.component';
+import { SecurityNoticeComponent } from '../../../components/security-notice/security-notice.component';
 import type { DashboardMetrics, PaginatedResult } from '../../../types/admin.interface';
 import type { Party } from '../../../types/party.interface';
 import type { Statement } from '../../../types/statement.interface';
-import { ALL_CATEGORIES_OPTION } from '../../admin-page.interfaces';
-import type { PartyListFilters, StatementListFilters } from '../../admin-page.interfaces';
+import type { PartyListFilters, StatementListFilters, StatusFilter } from '../../admin-page.interfaces';
 import { AdminPageService } from '../../admin-page.service';
-import { ConfirmationDialogComponent } from '../../../components/confirmation-dialog/confirmation-dialog.component';
+import { extractErrorMessage } from '../../extract-error-message';
 import { PartiesTableComponent } from './components/parties-table/parties-table.component';
 import { QuickActionsComponent } from './components/quick-actions/quick-actions.component';
 import { StatementsTableComponent } from './components/statements-table/statements-table.component';
 
 const PAGE_SIZE = 5;
 
-const STATEMENT_NUMBER_PADDING = 2;
-
 interface PendingDeletion {
   readonly type: 'statement' | 'party'
-  readonly id: string
+  readonly id: number
   readonly label: string
 }
 
@@ -29,7 +27,7 @@ function emptyResult<T>(pageSize: number): PaginatedResult<T> {
 
 @Component({
   selector: 'stw-dashboard',
-  imports: [ConfirmationDialogComponent, PartiesTableComponent, QuickActionsComponent, StatementsTableComponent],
+  imports: [ConfirmationDialogComponent, PartiesTableComponent, QuickActionsComponent, SecurityNoticeComponent, StatementsTableComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -41,7 +39,11 @@ export class DashboardComponent implements OnInit {
 
   protected readonly partiesResult = signal<PaginatedResult<Party>>(emptyResult(PAGE_SIZE));
 
-  protected readonly statementFilters = signal<StatementListFilters>({ search: '', category: ALL_CATEGORIES_OPTION });
+  protected readonly statementsLoading = signal(true);
+
+  protected readonly partiesLoading = signal(true);
+
+  protected readonly statementFilters = signal<StatementListFilters>({ search: '', status: 'all' });
 
   protected readonly statementPage = signal(1);
 
@@ -51,18 +53,11 @@ export class DashboardComponent implements OnInit {
 
   protected readonly pendingDeletion = signal<PendingDeletion | null>(null);
 
-  protected readonly categoryOptions: readonly DropdownOption[];
+  protected readonly errorMessage = signal<string | null>(null);
 
   private readonly adminPageService = inject(AdminPageService);
 
   private readonly router = inject(Router);
-
-  public constructor() {
-    this.categoryOptions = [
-      { value: ALL_CATEGORIES_OPTION, label: ALL_CATEGORIES_OPTION },
-      ...this.adminPageService.getCategories().map(category => ({ value: category, label: category })),
-    ];
-  }
 
   public ngOnInit(): void {
     this.loadMetrics();
@@ -76,8 +71,8 @@ export class DashboardComponent implements OnInit {
     this.loadStatements();
   }
 
-  protected handleStatementCategoryChange(category: string): void {
-    this.statementFilters.update(filters => ({ ...filters, category }));
+  protected handleStatementStatusChange(status: StatusFilter): void {
+    this.statementFilters.update(filters => ({ ...filters, status }));
     this.statementPage.set(1);
     this.loadStatements();
   }
@@ -102,7 +97,7 @@ export class DashboardComponent implements OnInit {
     void this.router.navigate(['/admin/stellingen/nieuw']);
   }
 
-  protected navigateToEditStatement(id: string): void {
+  protected navigateToEditStatement(id: number): void {
     void this.router.navigate(['/admin/stellingen', id]);
   }
 
@@ -110,25 +105,21 @@ export class DashboardComponent implements OnInit {
     void this.router.navigate(['/admin/partijen/nieuw']);
   }
 
-  protected navigateToEditParty(id: string): void {
+  protected navigateToEditParty(id: number): void {
     void this.router.navigate(['/admin/partijen', id]);
   }
 
-  protected requestStatementDeletion(id: string): void {
+  protected requestStatementDeletion(id: number): void {
     const statement = this.statementsResult().items.find(item => item.id === id);
 
     if (statement === undefined) {
       return;
     }
 
-    this.pendingDeletion.set({
-      type: 'statement',
-      id,
-      label: `stelling #${statement.number.toString().padStart(STATEMENT_NUMBER_PADDING, '0')} (${statement.category})`,
-    });
+    this.pendingDeletion.set({ type: 'statement', id, label: `stelling #${statement.id}` });
   }
 
-  protected requestPartyDeletion(id: string): void {
+  protected requestPartyDeletion(id: number): void {
     const party = this.partiesResult().items.find(item => item.id === id);
 
     if (party === undefined) {
@@ -149,38 +140,69 @@ export class DashboardComponent implements OnInit {
       return;
     }
 
+    this.errorMessage.set(null);
+
     const deletion$ = pending.type === 'statement'
       ? this.adminPageService.deleteStatement(pending.id)
       : this.adminPageService.deleteParty(pending.id);
 
-    deletion$.subscribe(() => {
-      this.pendingDeletion.set(null);
-      this.loadMetrics();
+    deletion$.subscribe({
+      next: () => {
+        this.pendingDeletion.set(null);
+        this.loadMetrics();
 
-      if (pending.type === 'statement') {
-        this.loadStatements();
-      }
-      else {
-        this.loadParties();
-      }
+        if (pending.type === 'statement') {
+          this.loadStatements();
+        }
+        else {
+          this.loadParties();
+        }
+      },
+      error: (error: unknown) => {
+        this.pendingDeletion.set(null);
+        this.errorMessage.set(extractErrorMessage(error));
+      },
     });
   }
 
   private loadMetrics(): void {
-    this.adminPageService.getDashboardMetrics().subscribe((metrics) => {
-      this.metrics.set(metrics);
+    this.adminPageService.getDashboardMetrics().subscribe({
+      next: (metrics) => {
+        this.metrics.set(metrics);
+      },
+      error: (error: unknown) => {
+        this.errorMessage.set(extractErrorMessage(error));
+      },
     });
   }
 
   private loadStatements(): void {
-    this.adminPageService.getStatements(this.statementFilters(), this.statementPage(), PAGE_SIZE).subscribe((result) => {
-      this.statementsResult.set(result);
+    this.statementsLoading.set(true);
+
+    this.adminPageService.getStatements(this.statementFilters(), this.statementPage(), PAGE_SIZE).subscribe({
+      next: (result) => {
+        this.statementsResult.set(result);
+        this.statementsLoading.set(false);
+      },
+      error: (error: unknown) => {
+        this.statementsLoading.set(false);
+        this.errorMessage.set(extractErrorMessage(error));
+      },
     });
   }
 
   private loadParties(): void {
-    this.adminPageService.getParties(this.partyFilters(), this.partyPage(), PAGE_SIZE).subscribe((result) => {
-      this.partiesResult.set(result);
+    this.partiesLoading.set(true);
+
+    this.adminPageService.getParties(this.partyFilters(), this.partyPage(), PAGE_SIZE).subscribe({
+      next: (result) => {
+        this.partiesResult.set(result);
+        this.partiesLoading.set(false);
+      },
+      error: (error: unknown) => {
+        this.partiesLoading.set(false);
+        this.errorMessage.set(extractErrorMessage(error));
+      },
     });
   }
 }

@@ -1,10 +1,8 @@
-import type { StatementCategory } from '../types/statement.interface';
-
-export const ALL_CATEGORIES_OPTION = 'Alle categorieën';
+export type StatusFilter = 'all' | 'active' | 'inactive';
 
 export interface StatementListFilters {
   readonly search: string
-  readonly category: string
+  readonly status: StatusFilter
 }
 
 export interface PartyListFilters {
@@ -13,12 +11,12 @@ export interface PartyListFilters {
 
 export interface StatementFormValue {
   readonly text: string
-  readonly category: StatementCategory
+  readonly isActive: boolean
 }
 
 export interface PartyFormValue {
   readonly name: string
-  readonly abbreviation: string
-  readonly leaderName: string
-  readonly currentSeats: number
+  readonly description: string | null
+  readonly imageUrl: string | null
+  readonly isActive: boolean
 }

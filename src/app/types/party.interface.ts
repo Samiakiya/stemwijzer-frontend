@@ -1,9 +1,9 @@
 export interface Party {
-  readonly id: string
+  readonly id: number
   readonly name: string
-  readonly abbreviation: string
-  readonly leaderName: string
-  readonly currentSeats: number
-  readonly answeredStatementCount: number
-  readonly totalStatementCount: number
+  readonly description: string | null
+  readonly imageUrl: string | null
+  readonly isActive: boolean
+  readonly createdAt: string
+  readonly updatedAt: string
 }

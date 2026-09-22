@@ -2,11 +2,11 @@
   <div class="panel-header">
     <div class="panel-heading">
       <h2>Stellingen beheren</h2>
-      <p>Overzicht van alle thematische stellingen, status en kiezersrelevantie</p>
+      <p>Overzicht van alle stellingen en hun status</p>
     </div>
     <div class="panel-controls">
-      <stw-search-bar placeholder="Zoek op nummer of trefwoord…" (valueChange)="searchChange.emit($event)" [value]="search()" />
-      <stw-dropdown ariaLabel="Filter op categorie" (valueChange)="categoryChange.emit($event)" [options]="categoryOptions()" [value]="category()" />
+      <stw-search-bar placeholder="Zoek op stellingtekst…" (valueChange)="searchChange.emit($event)" [value]="search()" />
+      <stw-dropdown ariaLabel="Filter op status" (valueChange)="handleStatusChange($event)" [options]="statusOptions" [value]="status()" />
       <stw-button size="sm" (buttonClick)="addRequested.emit()">
         <svg aria-hidden="true" fill="none" viewBox="0 0 14 14">
           <path d="M7 2.917v8.166M2.917 7h8.166" stroke="currentColor" stroke-linecap="round" stroke-width="1.5" />
@@ -16,25 +16,29 @@
     </div>
   </div>
 
-  @if (statements().length === 0) {
+  @if (loading()) {
+    <stw-empty-state message="Stellingen laden…" />
+  } @else if (statements().length === 0) {
     <stw-empty-state message="Er zijn geen stellingen gevonden voor deze zoekopdracht." />
   } @else {
     <table class="data-table">
       <thead>
         <tr>
           <th scope="col">Nr</th>
-          <th scope="col">Thema / stellingtekst</th>
-          <th scope="col">Categorie</th>
+          <th scope="col">Stellingtekst</th>
+          <th scope="col">Status</th>
           <th class="actions-column" scope="col">Acties</th>
         </tr>
       </thead>
       <tbody>
         @for (statement of statements(); track statement.id) {
           <tr>
-            <td class="number-cell">#{{ statement.number.toString().padStart(2, '0') }}</td>
+            <td class="number-cell">#{{ statement.id }}</td>
             <td class="text-cell">{{ statement.text }}</td>
             <td>
-              <stw-status-badge tone="blue">{{ statement.category }}</stw-status-badge>
+              <stw-status-badge [tone]="statement.isActive ? 'green' : 'gray'">
+                {{ statement.isActive ? 'Actief' : 'Inactief' }}
+              </stw-status-badge>
             </td>
             <td class="actions-column">
               <button class="row-action" type="button" (click)="editRequested.emit(statement.id)">Bewerken</button>

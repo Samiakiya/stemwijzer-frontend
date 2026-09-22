@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { SecurityNoticeComponent } from '../../../components/security-notice/security-notice.component';
 import type { PartyFormValue } from '../../admin-page.interfaces';
 import { AdminPageService } from '../../admin-page.service';
+import { extractErrorMessage } from '../../extract-error-message';
 import { PartyFormComponent } from './components/party-form/party-form.component';
 
 @Component({
@@ -22,7 +23,7 @@ export class PartyEditorComponent implements OnInit {
 
   protected readonly errorMessage = signal<string | null>(null);
 
-  protected readonly partyId: string | null;
+  protected readonly partyId: number | null;
 
   private readonly adminPageService = inject(AdminPageService);
 
@@ -31,7 +32,9 @@ export class PartyEditorComponent implements OnInit {
   private readonly router = inject(Router);
 
   public constructor() {
-    this.partyId = this.route.snapshot.paramMap.get('id');
+    const rawId = this.route.snapshot.paramMap.get('id');
+
+    this.partyId = rawId === null ? null : Number(rawId);
   }
 
   public ngOnInit(): void {
@@ -48,9 +51,9 @@ export class PartyEditorComponent implements OnInit {
 
       this.initialValue.set({
         name: party.name,
-        abbreviation: party.abbreviation,
-        leaderName: party.leaderName,
-        currentSeats: party.currentSeats,
+        description: party.description,
+        imageUrl: party.imageUrl,
+        isActive: party.isActive,
       });
     });
   }
@@ -63,9 +66,15 @@ export class PartyEditorComponent implements OnInit {
       ? this.adminPageService.createParty(value)
       : this.adminPageService.updateParty(this.partyId, value);
 
-    save$.subscribe(() => {
-      this.saving.set(false);
-      void this.router.navigate(['/admin'], { fragment: 'partijen-panel' });
+    save$.subscribe({
+      next: () => {
+        this.saving.set(false);
+        void this.router.navigate(['/admin'], { fragment: 'partijen-panel' });
+      },
+      error: (error: unknown) => {
+        this.saving.set(false);
+        this.errorMessage.set(extractErrorMessage(error));
+      },
     });
   }
 

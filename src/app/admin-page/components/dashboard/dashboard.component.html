@@ -2,21 +2,25 @@
   <p class="breadcrumb">Electorale productieomgeving · Editie #TK2025-V3</p>
   <h1 class="page-title">Super Admin Dashboard — Tweede Kamerverkiezingen 2025</h1>
 
+  @if (errorMessage(); as message) {
+    <stw-security-notice variant="error">{{ message }}</stw-security-notice>
+  }
+
   <stw-quick-actions (createParty)="navigateToNewParty()" (createStatement)="navigateToNewStatement()" [metrics]="metrics()" />
 
   <stw-statements-table
     (addRequested)="navigateToNewStatement()"
-    (categoryChange)="handleStatementCategoryChange($event)"
     (deleteRequested)="requestStatementDeletion($event)"
     (editRequested)="navigateToEditStatement($event)"
     (pageChange)="handleStatementPageChange($event)"
     (searchChange)="handleStatementSearchChange($event)"
-    [category]="statementFilters().category"
-    [categoryOptions]="categoryOptions"
+    (statusChange)="handleStatementStatusChange($event)"
+    [loading]="statementsLoading()"
     [page]="statementPage()"
     [pageSize]="statementsResult().pageSize"
     [search]="statementFilters().search"
     [statements]="statementsResult().items"
+    [status]="statementFilters().status"
     [total]="statementsResult().total"
   />
 
@@ -26,6 +30,7 @@
     (editRequested)="navigateToEditParty($event)"
     (pageChange)="handlePartyPageChange($event)"
     (searchChange)="handlePartySearchChange($event)"
+    [loading]="partiesLoading()"
     [page]="partyPage()"
     [pageSize]="partiesResult().pageSize"
     [parties]="partiesResult().items"

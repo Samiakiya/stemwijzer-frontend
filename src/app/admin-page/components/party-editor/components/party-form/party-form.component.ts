@@ -4,14 +4,19 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ButtonComponent } from '../../../../../components/button/button.component';
 import type { PartyFormValue } from '../../../../admin-page.interfaces';
 
-const MIN_SEATS = 0;
-const MAX_SEATS = 150;
+const MAX_NAME_LENGTH = 100;
 
 interface PartyFormControls {
   readonly name: FormControl<string>
-  readonly abbreviation: FormControl<string>
-  readonly leaderName: FormControl<string>
-  readonly currentSeats: FormControl<number>
+  readonly description: FormControl<string>
+  readonly imageUrl: FormControl<string>
+  readonly isActive: FormControl<boolean>
+}
+
+function toNullIfEmpty(value: string): string | null {
+  const trimmed = value.trim();
+
+  return trimmed === '' ? null : trimmed;
 }
 
 @Component({
@@ -33,24 +38,14 @@ export class PartyFormComponent {
   protected readonly form = new FormGroup<PartyFormControls>({
     name: new FormControl('', {
       nonNullable: true,
-      validators: [(control: AbstractControl): ValidationErrors | null => Validators.required(control)],
-    }),
-    abbreviation: new FormControl('', {
-      nonNullable: true,
-      validators: [(control: AbstractControl): ValidationErrors | null => Validators.required(control)],
-    }),
-    leaderName: new FormControl('', {
-      nonNullable: true,
-      validators: [(control: AbstractControl): ValidationErrors | null => Validators.required(control)],
-    }),
-    currentSeats: new FormControl(0, {
-      nonNullable: true,
       validators: [
         (control: AbstractControl): ValidationErrors | null => Validators.required(control),
-        Validators.min(MIN_SEATS),
-        Validators.max(MAX_SEATS),
+        Validators.maxLength(MAX_NAME_LENGTH),
       ],
     }),
+    description: new FormControl('', { nonNullable: true }),
+    imageUrl: new FormControl('', { nonNullable: true }),
+    isActive: new FormControl(true, { nonNullable: true }),
   });
 
   public constructor() {
@@ -58,7 +53,12 @@ export class PartyFormComponent {
       const value = this.initialValue();
 
       if (value !== null) {
-        this.form.setValue(value);
+        this.form.setValue({
+          name: value.name,
+          description: value.description ?? '',
+          imageUrl: value.imageUrl ?? '',
+          isActive: value.isActive,
+        });
       }
     });
   }
@@ -74,6 +74,13 @@ export class PartyFormComponent {
       return;
     }
 
-    this.submitForm.emit(this.form.getRawValue());
+    const raw = this.form.getRawValue();
+
+    this.submitForm.emit({
+      name: raw.name.trim(),
+      description: toNullIfEmpty(raw.description),
+      imageUrl: toNullIfEmpty(raw.imageUrl),
+      isActive: raw.isActive,
+    });
   }
 }

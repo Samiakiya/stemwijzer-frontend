@@ -6,6 +6,15 @@ import { EmptyStateComponent } from '../../../../../components/empty-state/empty
 import { SearchBarComponent } from '../../../../../components/search-bar/search-bar.component';
 import { StatusBadgeComponent } from '../../../../../components/status-badge/status-badge.component';
 import type { Statement } from '../../../../../types/statement.interface';
+import type { StatusFilter } from '../../../../admin-page.interfaces';
+
+export const STATUS_FILTER_OPTIONS: readonly DropdownOption[] = [
+  { value: 'all', label: 'Alle statussen' },
+  { value: 'active', label: 'Actief' },
+  { value: 'inactive', label: 'Inactief' },
+];
+
+const STATUS_FILTER_VALUES: readonly StatusFilter[] = ['all', 'active', 'inactive'];
 
 @Component({
   selector: 'stw-statements-table',
@@ -25,21 +34,23 @@ export class StatementsTableComponent {
 
   public readonly search = input('');
 
-  public readonly category = input.required<string>();
+  public readonly status = input.required<StatusFilter>();
 
-  public readonly categoryOptions = input.required<readonly DropdownOption[]>();
+  public readonly loading = input(false);
 
   public readonly searchChange = output<string>();
 
-  public readonly categoryChange = output<string>();
+  public readonly statusChange = output<StatusFilter>();
 
   public readonly pageChange = output<number>();
 
   public readonly addRequested = output();
 
-  public readonly editRequested = output<string>();
+  public readonly editRequested = output<number>();
 
-  public readonly deleteRequested = output<string>();
+  public readonly deleteRequested = output<number>();
+
+  protected readonly statusOptions = STATUS_FILTER_OPTIONS;
 
   protected readonly totalPages = computed(() => Math.max(1, Math.ceil(this.total() / this.pageSize())));
 
@@ -52,6 +63,14 @@ export class StatementsTableComponent {
   protected goToNextPage(): void {
     if (this.page() < this.totalPages()) {
       this.pageChange.emit(this.page() + 1);
+    }
+  }
+
+  protected handleStatusChange(value: string): void {
+    const match = STATUS_FILTER_VALUES.find(candidate => candidate === value);
+
+    if (match !== undefined) {
+      this.statusChange.emit(match);
     }
   }
 }

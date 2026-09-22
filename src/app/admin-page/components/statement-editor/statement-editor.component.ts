@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { SecurityNoticeComponent } from '../../../components/security-notice/security-notice.component';
 import type { StatementFormValue } from '../../admin-page.interfaces';
 import { AdminPageService } from '../../admin-page.service';
+import { extractErrorMessage } from '../../extract-error-message';
 import { StatementFormComponent } from './components/statement-form/statement-form.component';
 
 @Component({
@@ -14,8 +15,6 @@ import { StatementFormComponent } from './components/statement-form/statement-fo
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StatementEditorComponent implements OnInit {
-  protected readonly categories = inject(AdminPageService).getCategories();
-
   protected readonly initialValue = signal<StatementFormValue | null>(null);
 
   protected readonly saving = signal(false);
@@ -24,7 +23,7 @@ export class StatementEditorComponent implements OnInit {
 
   protected readonly errorMessage = signal<string | null>(null);
 
-  protected readonly statementId: string | null;
+  protected readonly statementId: number | null;
 
   private readonly adminPageService = inject(AdminPageService);
 
@@ -33,7 +32,9 @@ export class StatementEditorComponent implements OnInit {
   private readonly router = inject(Router);
 
   public constructor() {
-    this.statementId = this.route.snapshot.paramMap.get('id');
+    const rawId = this.route.snapshot.paramMap.get('id');
+
+    this.statementId = rawId === null ? null : Number(rawId);
   }
 
   public ngOnInit(): void {
@@ -48,7 +49,7 @@ export class StatementEditorComponent implements OnInit {
         return;
       }
 
-      this.initialValue.set({ text: statement.text, category: statement.category });
+      this.initialValue.set({ text: statement.text, isActive: statement.isActive });
     });
   }
 
@@ -60,9 +61,15 @@ export class StatementEditorComponent implements OnInit {
       ? this.adminPageService.createStatement(value)
       : this.adminPageService.updateStatement(this.statementId, value);
 
-    save$.subscribe(() => {
-      this.saving.set(false);
-      void this.router.navigate(['/admin'], { fragment: 'stellingen-panel' });
+    save$.subscribe({
+      next: () => {
+        this.saving.set(false);
+        void this.router.navigate(['/admin'], { fragment: 'stellingen-panel' });
+      },
+      error: (error: unknown) => {
+        this.saving.set(false);
+        this.errorMessage.set(extractErrorMessage(error));
+      },
     });
   }
 

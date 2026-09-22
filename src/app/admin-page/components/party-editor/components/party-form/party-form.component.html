@@ -5,36 +5,23 @@
       <input formControlName="name" id="party-name" placeholder="Bijvoorbeeld: Democraten 66" type="text" />
     </div>
     @if (isFieldInvalid(form.controls.name)) {
-      <p class="field-error">Partijnaam is verplicht.</p>
+      <p class="field-error">Partijnaam is verplicht en mag maximaal 100 tekens bevatten.</p>
     }
   </div>
   <div class="field">
-    <label class="field-label" for="party-abbreviation">Afkorting</label>
-    <div class="field-input" [class.field-input-error]="isFieldInvalid(form.controls.abbreviation)">
-      <input formControlName="abbreviation" id="party-abbreviation" placeholder="Bijvoorbeeld: D66" type="text" />
-    </div>
-    @if (isFieldInvalid(form.controls.abbreviation)) {
-      <p class="field-error">Afkorting is verplicht.</p>
-    }
+    <label class="field-label" for="party-description">Omschrijving (optioneel)</label>
+    <textarea class="field-textarea" formControlName="description" id="party-description" placeholder="Korte omschrijving van de partij…" rows="3"></textarea>
   </div>
   <div class="field">
-    <label class="field-label" for="party-leader">Lijsttrekker</label>
-    <div class="field-input" [class.field-input-error]="isFieldInvalid(form.controls.leaderName)">
-      <input formControlName="leaderName" id="party-leader" placeholder="Bijvoorbeeld: R. Jetten" type="text" />
+    <label class="field-label" for="party-image-url">Logo-URL (optioneel)</label>
+    <div class="field-input">
+      <input formControlName="imageUrl" id="party-image-url" placeholder="https://example.com/logo.png" type="text" />
     </div>
-    @if (isFieldInvalid(form.controls.leaderName)) {
-      <p class="field-error">Lijsttrekker is verplicht.</p>
-    }
   </div>
-  <div class="field">
-    <label class="field-label" for="party-seats">Huidige zetels</label>
-    <div class="field-input" [class.field-input-error]="isFieldInvalid(form.controls.currentSeats)">
-      <input formControlName="currentSeats" id="party-seats" max="150" min="0" type="number" />
-    </div>
-    @if (isFieldInvalid(form.controls.currentSeats)) {
-      <p class="field-error">Vul een geldig aantal zetels in (0 t/m 150).</p>
-    }
-  </div>
+  <label class="checkbox-field">
+    <input formControlName="isActive" type="checkbox" />
+    <span>Partij is actief</span>
+  </label>
   <div class="form-actions">
     <stw-button type="button" variant="secondary" (buttonClick)="cancelled.emit()">Annuleren</stw-button>
     <stw-button type="submit" [loading]="loading()">Partij opslaan</stw-button>

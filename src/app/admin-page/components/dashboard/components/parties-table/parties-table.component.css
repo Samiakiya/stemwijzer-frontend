@@ -13,13 +13,24 @@
   border-radius: var(--radius-sm);
 }
 
+.party-logo-image {
+  width: 2.25rem;
+  height: 2.25rem;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+}
+
 .party-name {
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-primary);
 }
 
-.party-leader {
+.party-description {
   margin-top: var(--space-1);
+  max-width: 24rem;
+  overflow: hidden;
   font-size: var(--font-size-xs);
   color: var(--color-text-muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
