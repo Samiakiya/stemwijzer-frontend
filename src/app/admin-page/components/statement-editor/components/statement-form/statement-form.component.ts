@@ -5,7 +5,7 @@ import { ButtonComponent } from '../../../../../components/button/button.compone
 import type { DropdownOption } from '../../../../../components/dropdown/dropdown.component';
 import { DropdownComponent } from '../../../../../components/dropdown/dropdown.component';
 import type { StatementFormValue } from '../../../../admin-page.interfaces';
-import type { StatementCategory } from '../../../../../types/statement.interface';
+import type { StatementCategory } from '../../../../../types/admin.interface';
 
 const MIN_TEXT_LENGTH = 10;
 

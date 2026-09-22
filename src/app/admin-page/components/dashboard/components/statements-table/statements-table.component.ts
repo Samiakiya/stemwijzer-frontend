@@ -5,7 +5,7 @@ import { DropdownComponent } from '../../../../../components/dropdown/dropdown.c
 import { EmptyStateComponent } from '../../../../../components/empty-state/empty-state.component';
 import { SearchBarComponent } from '../../../../../components/search-bar/search-bar.component';
 import { StatusBadgeComponent } from '../../../../../components/status-badge/status-badge.component';
-import type { Statement } from '../../../../../types/statement.interface';
+import type { AdminStatement } from '../../../../../types/admin.interface';
 
 @Component({
   selector: 'stw-statements-table',
@@ -15,7 +15,7 @@ import type { Statement } from '../../../../../types/statement.interface';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StatementsTableComponent {
-  public readonly statements = input.required<readonly Statement[]>();
+  public readonly statements = input.required<readonly AdminStatement[]>();
 
   public readonly total = input.required<number>();
 

@@ -2,9 +2,8 @@ import type { OnInit } from '@angular/core';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import type { DropdownOption } from '../../../components/dropdown/dropdown.component';
-import type { DashboardMetrics, PaginatedResult } from '../../../types/admin.interface';
+import type { AdminStatement, DashboardMetrics, PaginatedResult } from '../../../types/admin.interface';
 import type { Party } from '../../../types/party.interface';
-import type { Statement } from '../../../types/statement.interface';
 import { ALL_CATEGORIES_OPTION } from '../../admin-page.interfaces';
 import type { PartyListFilters, StatementListFilters } from '../../admin-page.interfaces';
 import { AdminPageService } from '../../admin-page.service';
@@ -37,7 +36,7 @@ function emptyResult<T>(pageSize: number): PaginatedResult<T> {
 export class DashboardComponent implements OnInit {
   protected readonly metrics = signal<DashboardMetrics>({ activeStatementCount: 0, registeredPartyCount: 0 });
 
-  protected readonly statementsResult = signal<PaginatedResult<Statement>>(emptyResult(PAGE_SIZE));
+  protected readonly statementsResult = signal<PaginatedResult<AdminStatement>>(emptyResult(PAGE_SIZE));
 
   protected readonly partiesResult = signal<PaginatedResult<Party>>(emptyResult(PAGE_SIZE));
 

@@ -1,4 +1,4 @@
-import type { StatementCategory } from '../types/statement.interface';
+import type { StatementCategory } from '../types/admin.interface';
 
 export const ALL_CATEGORIES_OPTION = 'Alle categorieën';
 

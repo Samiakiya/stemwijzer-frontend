@@ -1,6 +1,6 @@
-import type { Statement } from '../types/statement.interface';
+import type { AdminStatement } from '../types/admin.interface';
 
-export const STATEMENTS_DUMMY_DATA: readonly Statement[] = [
+export const STATEMENTS_DUMMY_DATA: readonly AdminStatement[] = [
   { id: 'st-01', number: 1, text: 'Nederland moet voor 2035 minimaal twee nieuwe kerncentrales bouwen om de klimaatdoelen te halen.', category: 'Klimaat & Energie' },
   { id: 'st-02', number: 2, text: 'Hypotheekrenteaftrek afbouwen. De fiscale aftrek van eigen woningrente wordt binnen tien jaar volledig verdwenen.', category: 'Wonen & Bouwen' },
   { id: 'st-03', number: 3, text: 'Eigen risico zorgverzekering. Het verplichte eigen risico op de basisverzekering moet worden afgeschaft.', category: 'Gezondheidszorg' },

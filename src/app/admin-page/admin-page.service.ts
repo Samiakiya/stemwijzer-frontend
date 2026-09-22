@@ -3,10 +3,9 @@ import type { Observable } from 'rxjs';
 import { of } from 'rxjs';
 import { PARTIES_DUMMY_DATA } from '../dummy-data/parties.dummy';
 import { STATEMENTS_DUMMY_DATA } from '../dummy-data/statements.dummy';
-import type { DashboardMetrics, PaginatedResult } from '../types/admin.interface';
+import type { AdminStatement, DashboardMetrics, PaginatedResult, StatementCategory } from '../types/admin.interface';
+import { STATEMENT_CATEGORIES } from '../types/admin.interface';
 import type { Party } from '../types/party.interface';
-import type { Statement, StatementCategory } from '../types/statement.interface';
-import { STATEMENT_CATEGORIES } from '../types/statement.interface';
 import type { PartyFormValue, PartyListFilters, StatementFormValue, StatementListFilters } from './admin-page.interfaces';
 import { ALL_CATEGORIES_OPTION } from './admin-page.interfaces';
 
@@ -29,7 +28,7 @@ function paginate<T>(items: readonly T[], page: number, pageSize: number): Pagin
   providedIn: 'root',
 })
 export class AdminPageService {
-  private statements: Statement[] = [...STATEMENTS_DUMMY_DATA];
+  private statements: AdminStatement[] = [...STATEMENTS_DUMMY_DATA];
 
   private parties: Party[] = [...PARTIES_DUMMY_DATA];
 
@@ -44,7 +43,7 @@ export class AdminPageService {
     });
   }
 
-  public getStatements(filters: StatementListFilters, page: number, pageSize: number): Observable<PaginatedResult<Statement>> {
+  public getStatements(filters: StatementListFilters, page: number, pageSize: number): Observable<PaginatedResult<AdminStatement>> {
     const search = normalize(filters.search);
 
     const filtered = this.statements.filter((statement) => {
@@ -57,14 +56,14 @@ export class AdminPageService {
     return of(paginate(filtered, page, pageSize));
   }
 
-  public getStatement(id: string): Observable<Statement | undefined> {
+  public getStatement(id: string): Observable<AdminStatement | undefined> {
     return of(this.statements.find(statement => statement.id === id));
   }
 
-  public createStatement(value: StatementFormValue): Observable<Statement> {
+  public createStatement(value: StatementFormValue): Observable<AdminStatement> {
     const nextNumber = this.statements.reduce((highest, statement) => Math.max(highest, statement.number), 0) + 1;
 
-    const created: Statement = {
+    const created: AdminStatement = {
       id: crypto.randomUUID(),
       number: nextNumber,
       text: value.text,
@@ -76,8 +75,8 @@ export class AdminPageService {
     return of(created);
   }
 
-  public updateStatement(id: string, value: StatementFormValue): Observable<Statement | undefined> {
-    let updated: Statement | undefined = undefined;
+  public updateStatement(id: string, value: StatementFormValue): Observable<AdminStatement | undefined> {
+    let updated: AdminStatement | undefined = undefined;
 
     this.statements = this.statements.map((statement) => {
       if (statement.id !== id) {
