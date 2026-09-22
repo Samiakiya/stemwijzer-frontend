@@ -1,4 +1,5 @@
 import type { Routes } from '@angular/router';
+import { adminAuthGuard } from './guards/admin-auth.guard';
 
 export const routes: Routes = [
   {
@@ -6,6 +7,16 @@ export const routes: Routes = [
     loadComponent: async () => import('./stemwijzer-page/stemwijzer-page.component')
       .then(module => module.StemwijzerPageComponent),
     title: 'StemWijzer | Stellingen',
+  },
+  {
+    path: 'login',
+    loadChildren: async () => import('./login-page/login-page.routes').then(module => module.routes),
+  },
+  {
+    path: 'admin',
+    canActivate: [adminAuthGuard],
+    loadComponent: async () => import('./admin-page/admin-page.component').then(module => module.AdminPageComponent),
+    loadChildren: async () => import('./admin-page/admin-page.routes').then(module => module.routes),
   },
   {
     path: '**',

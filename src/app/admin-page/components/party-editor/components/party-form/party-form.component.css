@@ -1,0 +1,7 @@
+@import url("../../../../../../styles/auth-form.css");
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
