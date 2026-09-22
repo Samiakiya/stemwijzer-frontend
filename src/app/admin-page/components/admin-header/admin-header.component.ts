@@ -11,5 +11,7 @@ import { UserAvatarComponent } from '../../../components/user-avatar/user-avatar
 export class AdminHeaderComponent {
   public readonly userEmail = input.required<string>();
 
+  public readonly userName = input.required<string>();
+
   public readonly logoutRequested = output();
 }

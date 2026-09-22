@@ -7,9 +7,9 @@
     <div class="panel-controls">
       <stw-search-bar placeholder="Zoek op nummer of trefwoord…" (valueChange)="searchChange.emit($event)" [value]="search()" />
       <stw-dropdown ariaLabel="Filter op categorie" (valueChange)="categoryChange.emit($event)" [options]="categoryOptions()" [value]="category()" />
-      <stw-button (buttonClick)="addRequested.emit()">
-        <svg aria-hidden="true" fill="none" viewBox="0 0 16 16">
-          <path d="M8 3.333v9.334M3.333 8h9.334" stroke="currentColor" stroke-linecap="round" stroke-width="1.5" />
+      <stw-button size="sm" (buttonClick)="addRequested.emit()">
+        <svg aria-hidden="true" fill="none" viewBox="0 0 14 14">
+          <path d="M7 2.917v8.166M2.917 7h8.166" stroke="currentColor" stroke-linecap="round" stroke-width="1.5" />
         </svg>
         Stelling toevoegen
       </stw-button>

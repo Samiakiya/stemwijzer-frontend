@@ -1,8 +1,8 @@
 .panel {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
-  padding: var(--space-6);
+  gap: var(--space-4);
+  padding: var(--space-5);
   background-color: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
@@ -53,15 +53,20 @@
 }
 
 .data-table td {
-  padding: var(--space-4) var(--space-3);
+  padding: var(--space-3);
   font-size: var(--font-size-sm);
   color: var(--color-text-primary);
   vertical-align: middle;
   border-bottom: 1px solid var(--color-border);
+  transition: background-color var(--transition-fast);
 }
 
 .data-table tbody tr:last-child td {
   border-bottom: none;
+}
+
+.data-table tbody tr:hover td {
+  background-color: var(--color-field-background);
 }
 
 .number-cell {
@@ -80,18 +85,23 @@
 
 .row-action {
   padding: var(--space-1) var(--space-2);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-accent-blue);
   border-radius: var(--radius-sm);
+  transition: background-color var(--transition-fast), color var(--transition-fast);
 }
 
 .row-action:hover {
-  background-color: var(--color-field-background);
+  background-color: rgb(52 87 213 / 10%);
 }
 
 .row-action-danger {
   color: var(--color-danger);
+}
+
+.row-action-danger:hover {
+  background-color: var(--color-danger-background);
 }
 
 .pagination {
@@ -113,11 +123,13 @@
 }
 
 .pagination-controls button {
-  padding: var(--space-2) var(--space-3);
-  font-weight: var(--font-weight-medium);
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   color: var(--color-text-secondary);
   background-color: var(--color-field-background);
   border-radius: var(--radius-sm);
+  transition: background-color var(--transition-fast), opacity var(--transition-fast);
 }
 
 .pagination-controls button:disabled {

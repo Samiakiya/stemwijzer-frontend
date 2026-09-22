@@ -4,8 +4,8 @@
     <h2 class="title">{{ title() }}</h2>
     <p class="message">{{ message() }}</p>
     <div class="actions">
-      <stw-button variant="secondary" (buttonClick)="cancelled.emit()">{{ cancelLabel() }}</stw-button>
-      <stw-button variant="danger" (buttonClick)="confirmed.emit()">{{ confirmLabel() }}</stw-button>
+      <stw-button size="sm" variant="secondary" (buttonClick)="cancelled.emit()">{{ cancelLabel() }}</stw-button>
+      <stw-button size="sm" variant="danger" (buttonClick)="confirmed.emit()">{{ confirmLabel() }}</stw-button>
     </div>
   </div>
 </div>

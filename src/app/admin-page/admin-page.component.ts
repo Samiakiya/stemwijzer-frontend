@@ -14,12 +14,17 @@ import { AdminNavigationComponent } from './components/admin-navigation/admin-na
 export class AdminPageComponent {
   protected readonly userEmail: string;
 
+  protected readonly userName: string;
+
   private readonly authService = inject(AuthService);
 
   private readonly router = inject(Router);
 
   public constructor() {
-    this.userEmail = this.authService.getSession()?.email ?? '';
+    const session = this.authService.getSession();
+
+    this.userEmail = session?.email ?? '';
+    this.userName = session?.name ?? 'Super Admin';
   }
 
   protected handleLogout(): void {
