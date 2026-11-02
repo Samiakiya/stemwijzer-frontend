@@ -1,0 +1,40 @@
+<section aria-labelledby="spectrum-heading" class="card spectrum-card">
+  <span class="eyebrow">
+    <stw-quiz-icon name="compass" />
+    Politiek spectrum
+  </span>
+  <h2 class="spectrum-title" id="spectrum-heading">Jouw plaats in het spectrum</h2>
+  <p class="spectrum-intro">Jouw positie ten opzichte van de partijen, berekend uit de antwoorden op de stellingen.</p>
+
+  <div class="spectrum-frame">
+    <span class="axis-label axis-top">↑ Progressief</span>
+    <span class="axis-label axis-bottom">↓ Conservatief</span>
+    <span class="axis-label axis-left">← Links</span>
+    <span class="axis-label axis-right">Rechts →</span>
+    <svg aria-label="Spectrum met jouw positie en die van de partijen" class="spectrum-plot" role="img" viewBox="0 0 100 100">
+      <line class="spectrum-axis" x1="6" x2="94" y1="50" y2="50" />
+      <line class="spectrum-axis" x1="50" x2="50" y1="6" y2="94" />
+      @for (point of points(); track point.id) {
+        <g class="party-point">
+          <title>{{ point.name }}</title>
+          <circle r="1.6" [attr.cx]="point.x" [attr.cy]="point.y" />
+          <text [attr.x]="point.x + 2.6" [attr.y]="point.y + 1.3">{{ point.label }}</text>
+        </g>
+      }
+      <g class="user-point">
+        <title>Jouw positie</title>
+        <circle r="4.2" [attr.cx]="user().x" [attr.cy]="user().y" />
+        <text text-anchor="middle" [attr.x]="user().x" [attr.y]="user().y + 1.4">Jij</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="spectrum-explanation">
+    <stw-quiz-icon class="explanation-icon" name="sparkle" />
+    <p>
+      <strong>{{ quadrant() }}</strong>
+      {{ nearestParty() === null ? '' : `Op de kaart staat ${nearestParty()} het dichtst bij jou.` }}
+      Je beste match blijft het matchpercentage hierboven; de kaart laat zien in welke richting je stemt.
+    </p>
+  </div>
+</section>

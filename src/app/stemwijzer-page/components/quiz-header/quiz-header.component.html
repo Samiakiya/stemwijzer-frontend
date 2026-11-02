@@ -1,0 +1,15 @@
+<header class="quiz-header">
+  <div class="header-inner">
+    @if (backLabel(); as label) {
+      <button class="back-button" type="button" (click)="back.emit()" [attr.aria-label]="label" [disabled]="backDisabled()">
+        <stw-quiz-icon name="arrowLeft" />
+      </button>
+    } @else {
+      <span aria-hidden="true" class="brand-mark">SW</span>
+    }
+    <div class="header-copy">
+      <p class="header-title">{{ heading() }}</p>
+      <span class="header-subtitle">{{ subtitle() }}</span>
+    </div>
+  </div>
+</header>

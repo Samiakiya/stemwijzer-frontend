@@ -1,0 +1,48 @@
+<div class="screen screen-with-sticky-action">
+  <button class="back-pill" type="button" (click)="back.emit()">
+    <stw-quiz-icon name="arrowLeft" />
+    Terug naar stelling
+  </button>
+
+  <div class="intro">
+    <span class="eyebrow">Toelichting</span>
+    <h2 class="page-title">{{ heading() }}</h2>
+  </div>
+
+  <figure class="card quote-card">
+    <figcaption class="quote-label">De stelling</figcaption>
+    <blockquote class="quote-text">“{{ statement().text }}”</blockquote>
+  </figure>
+
+  @for (section of sections(); track section.id) {
+    <section [class]="`explanation-section section-${section.tone}`">
+      <h3 class="section-title">
+        <span class="section-icon"><stw-quiz-icon [name]="section.icon" /></span>
+        {{ section.title }}
+      </h3>
+      @if (section.text !== null) {
+        <p class="section-text">{{ section.text }}</p>
+      } @else {
+        <ul class="argument-list" role="list">
+          @for (item of section.items; track $index) {
+            <li class="argument">
+              <stw-quiz-icon class="argument-icon" [name]="section.itemIcon" />
+              <span>{{ item }}</span>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+  } @empty {
+    <p class="card empty-text">Er is nog geen toelichting voor deze stelling. Bekijk wat de partijen ervan vinden voor meer achtergrond.</p>
+  }
+
+  <div class="sticky-action">
+    <div class="sticky-action-inner">
+      <button class="primary-action" type="button" (click)="back.emit()">
+        Begrepen, terug naar stelling
+        <stw-quiz-icon name="check" />
+      </button>
+    </div>
+  </div>
+</div>

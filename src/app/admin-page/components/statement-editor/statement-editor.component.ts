@@ -49,7 +49,16 @@ export class StatementEditorComponent implements OnInit {
         return;
       }
 
-      this.initialValue.set({ text: statement.text, isActive: statement.isActive });
+      this.initialValue.set({
+        text: statement.text,
+        isActive: statement.isActive,
+        title: statement.title,
+        theme: statement.theme,
+        explanation: statement.explanation,
+        consequence: statement.consequence,
+        argumentsFor: statement.argumentsFor,
+        argumentsAgainst: statement.argumentsAgainst,
+      });
     });
   }
 

@@ -1,0 +1,67 @@
+<div class="screen screen-wide screen-with-sticky-action">
+  <button class="back-pill" type="button" (click)="back.emit()">
+    <stw-quiz-icon name="arrowLeft" />
+    Terug naar stelling
+  </button>
+
+  <div class="title-row">
+    <h2 class="page-title">Wat vinden de partijen?</h2>
+    <span class="count-chip">Stelling {{ statement().index + 1 }} van {{ total() }}</span>
+  </div>
+
+  <section aria-label="De stelling" class="card statement-summary">
+    <span class="eyebrow">
+      <stw-quiz-icon name="compass" />
+      {{ statement().theme ?? 'Stelling' }}
+    </span>
+    <p class="summary-text">{{ statement().text }}</p>
+  </section>
+
+  <div aria-label="Filter op standpunt" class="filter-chips" role="group">
+    @for (chip of filters(); track chip.id) {
+      <button
+        class="filter-chip"
+        type="button"
+        (click)="selectFilter(chip.id)"
+        [attr.aria-pressed]="filter() === chip.id"
+        [class.filter-chip-active]="filter() === chip.id"
+      >
+        {{ chip.label }} <span class="chip-count">({{ chip.count }})</span>
+      </button>
+    }
+  </div>
+
+  @if (visibleParties().length === 0) {
+    <p class="empty-text">Er zijn geen partijen met dit standpunt.</p>
+  } @else {
+    <div class="party-grid">
+      @for (party of visibleParties(); track party.id) {
+        <article class="card party-card">
+          <div class="party-head">
+            <svg aria-hidden="true" class="party-initials" viewBox="0 0 40 40">
+              <circle cx="20" cy="20" fill-opacity="0.14" r="20" [attr.fill]="party.color" />
+              <text dominant-baseline="central" text-anchor="middle" x="20" y="20" [attr.fill]="party.textColor" [attr.font-size]="party.fontSize">{{ party.initials }}</text>
+            </svg>
+            <h3 class="party-name">{{ party.name }}</h3>
+            <span [class]="party.badgeClass">
+              <stw-quiz-icon [name]="party.answerIcon" />
+              {{ party.answerLabel }}
+            </span>
+          </div>
+          <p class="party-quote" [class.party-quote-empty]="party.explanation === null">
+            {{ party.explanation === null ? 'Deze partij heeft nog geen toelichting gegeven.' : `“${party.explanation}”` }}
+          </p>
+        </article>
+      }
+    </div>
+  }
+
+  <div class="sticky-action">
+    <div class="sticky-action-inner">
+      <button class="primary-action" type="button" (click)="continued.emit()">
+        Ga verder met stemmen
+        <stw-quiz-icon name="arrowRight" />
+      </button>
+    </div>
+  </div>
+</div>

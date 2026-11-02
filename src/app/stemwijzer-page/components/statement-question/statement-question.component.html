@@ -1,0 +1,55 @@
+<div class="screen">
+  <div class="progress">
+    <span class="count-chip">{{ position() }} van {{ total() }}</span>
+    <stw-quiz-bar
+      aria-label="Voortgang"
+      class="progress-track"
+      role="progressbar"
+      [attr.aria-valuemax]="total()"
+      [attr.aria-valuemin]="1"
+      [attr.aria-valuenow]="position()"
+      [value]="progress()"
+    />
+  </div>
+
+  @for (item of [statement()]; track item.id) {
+    <article aria-labelledby="statement-heading" class="card statement-card">
+      @if (item.theme !== null && item.title !== null) {
+        <span class="eyebrow">{{ item.theme }}</span>
+      }
+      <h2 class="statement-title" id="statement-heading">{{ heading() }}</h2>
+      <p class="statement-text">{{ item.text }}</p>
+
+      <div class="detail-actions">
+        <button class="detail-button" type="button" (click)="showParties.emit()">
+          <stw-quiz-icon name="chat" />
+          <span>Wat vinden partijen?</span>
+        </button>
+        <button class="detail-button" type="button" (click)="showExplanation.emit()">
+          <stw-quiz-icon name="info" />
+          <span>Toelichting</span>
+        </button>
+      </div>
+    </article>
+  }
+
+  <div aria-label="Kies jouw antwoord" class="answer-actions" role="group">
+    @for (option of options; track option.value) {
+      <button
+        type="button"
+        (click)="answered.emit(option.value)"
+        [attr.aria-pressed]="currentAnswer() === option.value"
+        [class]="`answer-button answer-${option.value}`"
+        [class.answer-chosen]="currentAnswer() === option.value"
+      >
+        <stw-quiz-icon class="answer-icon" [name]="option.icon" />
+        <span>{{ option.label }}</span>
+      </button>
+    }
+  </div>
+
+  <button class="skip-button" type="button" (click)="answered.emit(null)" [class.skip-chosen]="currentAnswer() === 'overgeslagen'">
+    <span>Overslaan</span>
+    <stw-quiz-icon name="arrowRight" />
+  </button>
+</div>

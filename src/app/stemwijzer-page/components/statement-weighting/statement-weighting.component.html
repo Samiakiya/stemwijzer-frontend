@@ -1,0 +1,45 @@
+<div class="screen screen-with-nav">
+  <div class="chip-row">
+    <span class="count-chip">
+      <stw-quiz-icon name="scale" />
+      Laatste stap · Weging
+    </span>
+    <span class="count-chip count-chip-strong">{{ selectedCount() }} geselecteerd</span>
+  </div>
+
+  <div class="intro">
+    <h2 class="page-title">Wegen onderwerpen zwaarder voor jou?</h2>
+    <p class="intro-text">Kies stellingen die extra belangrijk voor je zijn. Deze tellen dubbel mee in je resultaat.</p>
+  </div>
+
+  <ul class="weight-list" role="list">
+    @for (row of rows(); track row.id) {
+      <li>
+        <button class="weight-row" type="button" (click)="toggled.emit(row.id)" [attr.aria-pressed]="row.selected" [class.weight-row-selected]="row.selected">
+          <span aria-hidden="true" class="weight-icon"><stw-quiz-icon name="scale" /></span>
+          <span class="weight-copy">
+            <span class="weight-heading">{{ row.heading }}</span>
+            <span class="weight-text">{{ row.text }}</span>
+            <span class="weight-status">{{ row.selected ? 'Telt 2× mee' : 'Normaal gewicht (1×)' }}</span>
+          </span>
+          <span aria-hidden="true" class="weight-pill">
+            <stw-quiz-icon [name]="row.selected ? 'check' : 'plus'" />
+            2×
+          </span>
+        </button>
+      </li>
+    }
+  </ul>
+
+  @if (errorMessage(); as message) {
+    <p class="error-text" role="alert">{{ message }}</p>
+  }
+
+  <div class="weight-actions">
+    <button class="primary-action" type="button" (click)="submitted.emit()" [disabled]="submitting()">
+      {{ submitting() ? 'Uitslag berekenen…' : 'Bekijk mijn uitslag' }}
+      <stw-quiz-icon name="arrowRight" />
+    </button>
+    <button class="skip-link" type="button" (click)="skipped.emit()" [disabled]="submitting()">Sla deze stap over</button>
+  </div>
+</div>

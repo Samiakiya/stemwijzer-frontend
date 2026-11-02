@@ -15,8 +15,11 @@ export class PartyAdminPageService {
     return this.api.get<PartyStatementsResponse>('/party-admin/statements');
   }
 
-  public setAnswer(statementId: number, answer: Answer): Observable<PartyStatementAnswer> {
-    return this.api.put<PartyStatementAnswer>(`/party-admin/statements/${statementId}`, { answer });
+  // Zonder explanation blijft de bestaande uitleg staan; null of lege tekst haalt die weg.
+  public setAnswer(statementId: number, answer: Answer, explanation?: string | null): Observable<PartyStatementAnswer> {
+    const body = explanation === undefined ? { answer } : { answer, explanation };
+
+    return this.api.put<PartyStatementAnswer>(`/party-admin/statements/${statementId}`, body);
   }
 
   public getParty(): Observable<Party> {

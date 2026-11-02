@@ -1,0 +1,237 @@
+/* Gedeelde opbouw van de quizschermen; elk schermcomponent importeert dit bestand. */
+:host {
+  display: block;
+  font-family: var(--quiz-font);
+  color: var(--quiz-text);
+}
+
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  width: min(100%, var(--quiz-content-width));
+  margin: 0 auto;
+  padding: 1rem var(--quiz-gutter) 2rem;
+}
+
+.screen-wide {
+  width: min(100%, var(--quiz-wide-width));
+}
+
+.screen-with-nav {
+  padding-bottom: calc(var(--quiz-bottom-nav-height) + 2rem);
+}
+
+.screen-with-sticky-action {
+  padding-bottom: 7rem;
+}
+
+.card {
+  padding: 1.25rem;
+  background-color: var(--quiz-card);
+  border-radius: var(--quiz-radius-card);
+  box-shadow: var(--quiz-shadow-card);
+}
+
+.eyebrow {
+  display: inline-flex;
+  gap: 0.375rem;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--quiz-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.back-pill {
+  display: inline-flex;
+  gap: 0.375rem;
+  align-items: center;
+  align-self: flex-start;
+  padding: 0.375rem 0.875rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--quiz-primary);
+  background-color: var(--quiz-primary-soft);
+  border-radius: var(--radius-full);
+  transition: background-color var(--transition-fast);
+}
+
+.back-pill:hover {
+  background-color: color-mix(in srgb, var(--quiz-primary-soft) 70%, var(--quiz-primary) 12%);
+}
+
+.count-chip {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--quiz-primary);
+  background-color: var(--quiz-primary-soft);
+  border-radius: var(--radius-full);
+}
+
+.primary-action {
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 3.5rem;
+  padding: 0.75rem 1.25rem;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: #fff;
+  background-color: var(--quiz-primary);
+  border-radius: var(--quiz-radius-button);
+  box-shadow: 0 10px 24px -12px rgb(11 42 134 / 60%);
+  transition: background-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.primary-action:disabled {
+  opacity: 0.6;
+}
+
+.primary-action:hover:not(:disabled) {
+  background-color: var(--quiz-primary-hover);
+}
+
+.primary-action:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.secondary-action {
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 3rem;
+  padding: 0.625rem 1rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--quiz-text-muted);
+  background-color: var(--quiz-primary-softer);
+  border-radius: var(--quiz-radius-button);
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.secondary-action:hover {
+  color: var(--quiz-primary);
+  background-color: var(--quiz-primary-soft);
+}
+
+.sticky-action {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 15;
+  padding: 1rem var(--quiz-gutter) calc(1rem + env(safe-area-inset-bottom, 0));
+  background: linear-gradient(180deg, transparent, var(--quiz-background) 35%);
+}
+
+.sticky-action-inner {
+  width: min(100%, var(--quiz-content-width));
+  margin: 0 auto;
+}
+
+.filter-chips {
+  display: flex;
+  gap: 0.5rem;
+  padding-bottom: 0.25rem;
+  margin: 0 calc(var(--quiz-gutter) * -1);
+  padding-inline: var(--quiz-gutter);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.filter-chip {
+  flex-shrink: 0;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--quiz-text);
+  white-space: nowrap;
+  background-color: var(--quiz-primary-soft);
+  border-radius: var(--radius-full);
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.filter-chip:hover {
+  background-color: color-mix(in srgb, var(--quiz-primary-soft) 70%, var(--quiz-primary) 12%);
+}
+
+.filter-chip-active,
+.filter-chip-active:hover {
+  color: #fff;
+  background-color: var(--quiz-primary);
+}
+
+.chip-count {
+  font-weight: 500;
+  opacity: 0.8;
+}
+
+.answer-badge {
+  display: inline-flex;
+  flex-shrink: 0;
+  gap: 0.25rem;
+  align-items: center;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: var(--radius-full);
+}
+
+.answer-badge-eens {
+  color: var(--quiz-on-agree-soft);
+  background-color: var(--quiz-agree-soft);
+}
+
+.answer-badge-oneens {
+  color: var(--quiz-on-disagree-soft);
+  background-color: var(--quiz-disagree-soft);
+}
+
+.answer-badge-neutraal,
+.answer-badge-overgeslagen {
+  color: var(--quiz-on-neutral);
+  background-color: var(--quiz-neutral);
+}
+
+.answer-badge-geen {
+  color: var(--quiz-text-muted);
+  background-color: var(--quiz-background);
+}
+
+.answer-badge-solid.answer-badge-eens {
+  color: #fff;
+  background-color: var(--quiz-agree);
+}
+
+.answer-badge-solid.answer-badge-oneens {
+  color: #fff;
+  background-color: var(--quiz-disagree);
+}
+
+@media (width >= 48rem) {
+  .screen {
+    gap: 1.5rem;
+    padding-top: 1.5rem;
+  }
+
+  .card {
+    padding: 1.5rem;
+  }
+
+  .filter-chips {
+    flex-wrap: wrap;
+    margin: 0;
+    padding-inline: 0;
+    overflow: visible;
+  }
+}

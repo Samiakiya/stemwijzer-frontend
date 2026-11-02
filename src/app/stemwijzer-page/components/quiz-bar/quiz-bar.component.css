@@ -1,0 +1,32 @@
+:host {
+  display: block;
+  height: 0.5rem;
+  overflow: hidden;
+  background-color: var(--quiz-primary-soft);
+  border-radius: var(--radius-full);
+}
+
+.bar {
+  width: 100%;
+  height: 100%;
+}
+
+.bar-fill {
+  transition: width 300ms ease;
+}
+
+.fill-primary {
+  fill: var(--quiz-primary);
+}
+
+.fill-medium {
+  fill: var(--quiz-weak-bar);
+}
+
+.fill-weak {
+  fill: #a3161b;
+}
+
+.fill-agree {
+  fill: var(--quiz-agree);
+}

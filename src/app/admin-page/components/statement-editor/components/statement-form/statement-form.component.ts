@@ -2,13 +2,37 @@ import { ChangeDetectionStrategy, Component, effect, input, output } from '@angu
 import type { AbstractControl, ValidationErrors } from '@angular/forms';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ButtonComponent } from '../../../../../components/button/button.component';
+import { STATEMENT_THEMES } from '../../../../../types/statement.interface';
 import type { StatementFormValue } from '../../../../admin-page.interfaces';
 
 const MIN_TEXT_LENGTH = 10;
+const MAX_TITLE_LENGTH = 100;
+const MAX_ARGUMENTS = 10;
 
 interface StatementFormControls {
+  readonly title: FormControl<string>
+  readonly theme: FormControl<string>
   readonly text: FormControl<string>
+  readonly explanation: FormControl<string>
+  readonly consequence: FormControl<string>
+  readonly argumentsFor: FormControl<string>
+  readonly argumentsAgainst: FormControl<string>
   readonly isActive: FormControl<boolean>
+}
+
+function toNullIfEmpty(value: string): string | null {
+  const trimmed = value.trim();
+
+  return trimmed === '' ? null : trimmed;
+}
+
+// Argumenten worden als één tekstvak met één argument per regel bewerkt.
+function toArgumentList(value: string): string[] {
+  return value.split('\n').map(line => line.trim()).filter(line => line !== '');
+}
+
+function maxArgumentLines(control: AbstractControl): ValidationErrors | null {
+  return typeof control.value === 'string' && toArgumentList(control.value).length > MAX_ARGUMENTS ? { maxArguments: true } : null;
 }
 
 @Component({
@@ -27,7 +51,13 @@ export class StatementFormComponent {
 
   public readonly cancelled = output();
 
+  protected readonly themes = STATEMENT_THEMES;
+
+  protected readonly maxArguments = MAX_ARGUMENTS;
+
   protected readonly form = new FormGroup<StatementFormControls>({
+    title: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(MAX_TITLE_LENGTH)] }),
+    theme: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(MAX_TITLE_LENGTH)] }),
     text: new FormControl('', {
       nonNullable: true,
       validators: [
@@ -35,6 +65,10 @@ export class StatementFormComponent {
         Validators.minLength(MIN_TEXT_LENGTH),
       ],
     }),
+    explanation: new FormControl('', { nonNullable: true }),
+    consequence: new FormControl('', { nonNullable: true }),
+    argumentsFor: new FormControl('', { nonNullable: true, validators: [maxArgumentLines] }),
+    argumentsAgainst: new FormControl('', { nonNullable: true, validators: [maxArgumentLines] }),
     isActive: new FormControl(true, { nonNullable: true }),
   });
 
@@ -43,14 +77,21 @@ export class StatementFormComponent {
       const value = this.initialValue();
 
       if (value !== null) {
-        this.form.setValue(value);
+        this.form.setValue({
+          title: value.title ?? '',
+          theme: value.theme ?? '',
+          text: value.text,
+          explanation: value.explanation ?? '',
+          consequence: value.consequence ?? '',
+          argumentsFor: value.argumentsFor.join('\n'),
+          argumentsAgainst: value.argumentsAgainst.join('\n'),
+          isActive: value.isActive,
+        });
       }
     });
   }
 
-  protected isTextInvalid(): boolean {
-    const control = this.form.controls.text;
-
+  protected isInvalid(control: AbstractControl): boolean {
     return control.invalid && (control.dirty || control.touched);
   }
 
@@ -75,6 +116,17 @@ export class StatementFormComponent {
       return;
     }
 
-    this.submitForm.emit(this.form.getRawValue());
+    const raw = this.form.getRawValue();
+
+    this.submitForm.emit({
+      title: toNullIfEmpty(raw.title),
+      theme: toNullIfEmpty(raw.theme),
+      text: raw.text.trim(),
+      explanation: toNullIfEmpty(raw.explanation),
+      consequence: toNullIfEmpty(raw.consequence),
+      argumentsFor: toArgumentList(raw.argumentsFor),
+      argumentsAgainst: toArgumentList(raw.argumentsAgainst),
+      isActive: raw.isActive,
+    });
   }
 }

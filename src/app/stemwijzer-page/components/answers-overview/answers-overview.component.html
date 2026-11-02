@@ -1,0 +1,70 @@
+<div class="screen screen-with-nav">
+  <section class="completion-card" [class.completion-incomplete]="!complete()">
+    <div class="completion-head">
+      <span class="completion-title">
+        <stw-quiz-icon name="checkCircle" />
+        {{ complete() ? 'Volledig ingevuld' : 'Nog niet alles ingevuld' }}
+      </span>
+      <span class="completion-count">{{ answeredCount() }} / {{ rows().length }}</span>
+    </div>
+    <stw-quiz-bar class="completion-track" [tone]="complete() ? 'agree' : 'primary'" [value]="progress()" />
+    <p class="completion-text">{{ answeredCount() }} van {{ rows().length }} stellingen beantwoord. Tik op een stelling om je keuze eventueel nog aan te passen.</p>
+  </section>
+
+  <div aria-label="Filter op antwoord" class="filter-row" role="group">
+    <span class="filter-label">Filter:</span>
+    <div class="filter-chips">
+      @for (chip of filters(); track chip.id) {
+        <button
+          class="filter-chip"
+          type="button"
+          (click)="selectFilter(chip.id)"
+          [attr.aria-pressed]="filter() === chip.id"
+          [class.filter-chip-active]="filter() === chip.id"
+        >
+          <span aria-hidden="true" [class]="`dot ${chip.dot}`"></span>
+          {{ chip.label }} <span class="chip-count">({{ chip.count }})</span>
+        </button>
+      }
+    </div>
+  </div>
+
+  <ol class="answer-list" role="list">
+    @for (row of visibleRows(); track row.id) {
+      <li>
+        <button class="answer-row" type="button" (click)="edit.emit(row.index)">
+          <span class="row-number">{{ row.index + 1 }}.</span>
+          <span class="row-copy">
+            <span class="row-heading">{{ row.heading }}</span>
+            <span class="row-theme">{{ row.theme ?? 'Tik om je keuze te bekijken' }}</span>
+          </span>
+          <span [class]="row.badgeClass">
+            <stw-quiz-icon [name]="row.icon" />
+            {{ row.label }}
+          </span>
+          <stw-quiz-icon class="row-chevron" name="chevronRight" />
+        </button>
+      </li>
+    } @empty {
+      <li class="empty-text">Geen stellingen met dit antwoord.</li>
+    }
+  </ol>
+
+  @if (hiddenCount() > 0 || expanded()) {
+    <button class="toggle-button" type="button" (click)="toggleExpanded()" [attr.aria-expanded]="expanded()">
+      <stw-quiz-icon [name]="expanded() ? 'chevronUp' : 'chevronDown'" />
+      {{ toggleLabel() }}
+    </button>
+  }
+
+  <div class="overview-actions">
+    <button class="primary-action" type="button" (click)="toResults.emit()" [disabled]="!complete()">
+      Naar uitslag
+      <stw-quiz-icon name="arrowRight" />
+    </button>
+    <button class="secondary-action" type="button" (click)="restart.emit()">
+      <stw-quiz-icon name="refresh" />
+      Stellingen opnieuw doorlopen
+    </button>
+  </div>
+</div>

@@ -1,0 +1,36 @@
+/* Kleuren en maten van de StemWijzer-quiz voor kiezers; het CMS gebruikt variables.css. */
+:root {
+  --quiz-font: "Plus Jakarta Sans", var(--font-family-base);
+  --quiz-primary: #0b2a86;
+  --quiz-primary-hover: #071f66;
+  --quiz-primary-soft: #dfe8ff;
+  --quiz-primary-softer: #eef3ff;
+  --quiz-agree: #0a6b34;
+  --quiz-agree-soft: #c8f0d6;
+  --quiz-on-agree-soft: #0b5a2c;
+  --quiz-disagree: #7a0c0c;
+  --quiz-disagree-soft: #fbe2e2;
+  --quiz-on-disagree-soft: #8f1414;
+  --quiz-neutral: #d6e3ff;
+  --quiz-on-neutral: #142047;
+  --quiz-background: #f4f6fb;
+  --quiz-card: #fff;
+  --quiz-text: #0d1430;
+  --quiz-text-muted: #59627f;
+  --quiz-border: #e1e6f1;
+  --quiz-weak-bar: #7c8296;
+  --quiz-content-width: 40rem;
+  --quiz-wide-width: 68rem;
+  --quiz-gutter: 1rem;
+  --quiz-header-height: 4.25rem;
+  --quiz-bottom-nav-height: 4.5rem;
+  --quiz-radius-card: 1rem;
+  --quiz-radius-button: 0.875rem;
+  --quiz-shadow-card: 0 1px 2px rgb(13 20 48 / 5%), 0 8px 24px -16px rgb(13 20 48 / 18%);
+}
+
+@media (width >= 48rem) {
+  :root {
+    --quiz-gutter: 1.5rem;
+  }
+}

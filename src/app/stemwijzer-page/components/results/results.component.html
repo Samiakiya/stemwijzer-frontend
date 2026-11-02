@@ -1,122 +1,84 @@
-<header class="results-header">
-  <div class="header-content">
-    <div aria-hidden="true" class="brand-mark">✓</div>
-    <div class="brand-copy">
-      <span class="brand-name">StemWijzer</span>
-      <span class="brand-owner">ProDemos</span>
-    </div>
-    <div aria-hidden="true" class="profile-mark">●</div>
+<div class="screen screen-wide screen-with-nav">
+  <div class="completion-banner">
+    <span class="completion-text">
+      <stw-quiz-icon class="completion-icon" name="checkCircle" />
+      {{ matchingResult().totalAnswers }} van {{ answerSummary().total }} stellingen beantwoord
+    </span>
+    <span class="count-chip" [class.chip-hidden]="matchingResult().importantAnswers === 0">
+      <stw-quiz-icon name="scale" />
+      Gewogen ({{ matchingResult().importantAnswers }})
+    </span>
   </div>
-</header>
 
-<main class="results-main">
-  <div class="results-content">
-    <div class="completion-banner">
-      <div>
-        <span aria-hidden="true" class="completion-icon">✓</span>
-        <span>{{ matchingResult().totalAnswers }} van {{ answerSummary().total }} stellingen beantwoord</span>
-      </div>
-      <span class="calculated-badge">Berekend</span>
-    </div>
+  @if (bestMatch(); as winner) {
+    <div class="results-grid">
+      <div class="results-column">
+        <section aria-labelledby="best-match-heading" class="card best-match">
+          <div class="best-top">
+            <span class="best-badge"><stw-quiz-icon name="star" /> Beste match</span>
+            <strong class="best-score">{{ winner.percentage }}%</strong>
+          </div>
+          <h2 class="best-name" id="best-match-heading">
+            <button class="party-link" type="button" (click)="openPartyDetail(winner.match.partyId)" [disabled]="partyLoading()">
+              {{ winner.match.partyName }}
+            </button>
+          </h2>
+          <p class="best-sub" [class.best-error]="partyError() !== null">
+            {{ partyError() ?? (partyLoading() ? 'Partij-informatie laden…' : `${winner.match.matchedAnswers} van ${winner.match.comparedAnswers} antwoorden komen overeen · tik op de naam voor meer`) }}
+          </p>
+          <stw-quiz-bar class="bar-large" [value]="winner.percentage" />
+          <div class="answer-breakdown">
+            <span>{{ answerSummary().agree }} eens</span>
+            <span>{{ answerSummary().neutral }} neutraal</span>
+            <span>{{ answerSummary().disagree }} oneens</span>
+          </div>
+        </section>
 
-    @if (bestMatch(); as winner) {
-      <section aria-labelledby="best-match-heading" class="best-match-card">
-        <div class="best-match-topline">
-          <span class="best-match-badge"><span aria-hidden="true">★</span> Beste match</span>
-          <strong class="best-match-score">{{ percentage(winner) }}%</strong>
-        </div>
-        <h1 id="best-match-heading">
-          <button
-            class="best-match-link"
-            type="button"
-            (click)="openPartyDetail(winner.partyId)"
-            [disabled]="partyLoading()"
-          >
-            {{ winner.partyName }}
-          </button>
-        </h1>
-        <p>{{ winner.matchedAnswers }} van {{ winner.comparedAnswers }} antwoorden komen overeen</p>
-        <p aria-live="polite" class="party-detail-hint" [class.party-detail-error]="partyError()">{{ partyDetailHint() }}</p>
-        <svg aria-hidden="true" class="match-bar" preserveAspectRatio="none" viewBox="0 0 100 3">
-          <line class="match-bar-background" x1="0" x2="100" y1="1.5" y2="1.5" />
-          <line class="match-bar-value" x1="0" y1="1.5" y2="1.5" [attr.x2]="percentage(winner)" />
-        </svg>
-        <div class="answer-breakdown">
-          <span>{{ answerSummary().agree }} eens</span>
-          <span>{{ answerSummary().neutral }} neutraal</span>
-          <span>{{ answerSummary().disagree }} oneens</span>
-        </div>
-      </section>
-
-      <section aria-labelledby="other-parties-heading" class="other-parties">
-        <div class="section-heading-row">
-          <h2 id="other-parties-heading">Overige partijen</h2>
-          <span>Overeenkomst</span>
-        </div>
-        <div class="party-match-list">
-          @for (match of otherMatches(); track match.partyId) {
-            <div class="party-match-row">
-              <div class="party-match-copy">
-                <strong>{{ match.partyName }}</strong>
-                <span>{{ percentage(match) }}%</span>
-              </div>
-              <svg aria-hidden="true" class="party-match-bar" preserveAspectRatio="none" viewBox="0 0 100 2">
-                <line class="party-bar-background" x1="0" x2="100" y1="1" y2="1" />
-                <line class="party-bar-value" x1="0" y1="1" y2="1" [attr.x2]="percentage(match)" />
-              </svg>
-            </div>
-          }
-        </div>
-      </section>
-
-      <section aria-labelledby="spectrum-heading" class="spectrum-card">
-        <div class="spectrum-copy">
-          <span class="spectrum-eyebrow"><span aria-hidden="true">◇</span> Cultuur- en economisch spectrum</span>
-          <h2 id="spectrum-heading">Jouw ideologische plaatsing</h2>
-          <p>Jouw positie en die van de partijen, berekend uit de antwoorden op de stellingen: links-rechts op de economische as, progressief-conservatief op de culturele as.</p>
-        </div>
-
-        <div class="spectrum-frame">
-          <span class="axis-label axis-top">Progressief</span>
-          <span class="axis-label axis-left">Links</span>
-          <span class="axis-label axis-right">Rechts</span>
-          <span class="axis-label axis-bottom">Conservatief</span>
-          <svg aria-label="Spectrum met de links-rechts-as en de progressief-conservatief-as, met jouw positie en de partijmatches" class="spectrum-plot" role="img" viewBox="0 0 100 100">
-            <line class="spectrum-axis" x1="8" x2="92" y1="50" y2="50" />
-            <line class="spectrum-axis" x1="50" x2="50" y1="8" y2="92" />
-            @for (point of spectrumPoints(); track point.id) {
-              <g class="party-point">
-                <title>{{ point.name }}</title>
-                <circle r="4.5" [attr.cx]="point.x" [attr.cy]="point.y" />
-                <text text-anchor="middle" [attr.x]="point.x" [attr.y]="point.y + 1.5">{{ point.label }}</text>
-              </g>
+        <section aria-labelledby="other-parties-heading" class="other-parties">
+          <div class="section-head">
+            <h2 class="section-title" id="other-parties-heading">Overige partijen</h2>
+            <span class="section-note">Overeenkomst</span>
+          </div>
+          <ul class="card match-list" role="list">
+            @for (row of otherMatches(); track row.match.partyId) {
+              <li>
+                <button class="match-row" type="button" (click)="openPartyDetail(row.match.partyId)">
+                  <span class="match-copy">
+                    <span class="match-name">{{ row.match.partyName }}</span>
+                    <span [class]="`match-percentage text-${row.tone}`">{{ row.percentage }}%</span>
+                  </span>
+                  <stw-quiz-bar [tone]="row.tone" [value]="row.percentage" />
+                </button>
+              </li>
             }
-            <g class="user-point">
-              <title>Jouw positie</title>
-              <circle r="6" [attr.cx]="userPoint().x" [attr.cy]="userPoint().y" />
-              <text text-anchor="middle" [attr.x]="userPoint().x" [attr.y]="userPoint().y + 1.5">Jij</text>
-            </g>
-          </svg>
-        </div>
+          </ul>
+        </section>
+      </div>
 
-        <div class="spectrum-explanation">
-          <span aria-hidden="true">✦</span>
-          <p><strong>Zo lees je het spectrum:</strong> horizontaal zie je waar iemand staat tussen links en rechts (economisch), verticaal tussen progressief en conservatief (cultureel). Hoe dichter een partij bij “Jij” staat, hoe vergelijkbaarder de standpunten. Voor je beste match blijft het matchpercentage leidend.</p>
-        </div>
-      </section>
-    } @else {
-      <section class="empty-results">
-        <h1>Geen partijen om te vergelijken</h1>
-        <p>Er zijn nog geen actieve partijen met partijantwoorden beschikbaar.</p>
-      </section>
-    }
+      <div class="results-column">
+        <stw-results-spectrum [matches]="matchingResult().matches" [partyLabels]="partyLabels()" [userPosition]="matchingResult().userPosition" />
 
-    <button class="restart-button" type="button" (click)="restartQuestionnaire()">
-      <span aria-hidden="true">↻</span>
-      Stellingen opnieuw doorlopen
-    </button>
-  </div>
-</main>
+        <div class="results-actions">
+          <button class="primary-action" type="button" (click)="showOverview.emit()">
+            <stw-quiz-icon name="list" />
+            Bekijk je antwoorden
+            <stw-quiz-icon name="arrowRight" />
+          </button>
+          <button class="secondary-action" type="button" (click)="restart.emit()">
+            <stw-quiz-icon name="refresh" />
+            Opnieuw beginnen
+          </button>
+        </div>
+      </div>
+    </div>
+  } @else {
+    <section class="card empty-results">
+      <h2 class="section-title">Geen partijen om te vergelijken</h2>
+      <p>Er zijn nog geen actieve partijen met standpunten. Probeer het later opnieuw.</p>
+      <button class="secondary-action" type="button" (click)="restart.emit()">Opnieuw beginnen</button>
+    </section>
+  }
+</div>
 
 @if (selectedParty(); as party) {
   <stw-party-detail (closed)="closePartyDetail()" [party]="party" />

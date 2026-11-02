@@ -10,30 +10,20 @@ import { AuthService } from '../services/auth.service';
 import type { Answer } from '../types/answer.interface';
 import type { Party } from '../types/party.interface';
 import { PartyDetailsFormComponent } from './components/party-details-form/party-details-form.component';
+import { PartyStatementRowComponent } from './components/party-statement-row/party-statement-row.component';
 import type { PartyDetailsFormValue, PartyStatementAnswer } from './party-admin-page.interfaces';
 import { PartyAdminPageService } from './party-admin-page.service';
 
 const UNAUTHORIZED_STATUS = 401;
 
-interface AnswerOption {
-  readonly value: Answer
-  readonly label: string
-}
-
 @Component({
   selector: 'stw-party-admin-page',
-  imports: [AdminHeaderComponent, EmptyStateComponent, PartyDetailsFormComponent, SecurityNoticeComponent],
+  imports: [AdminHeaderComponent, EmptyStateComponent, PartyDetailsFormComponent, PartyStatementRowComponent, SecurityNoticeComponent],
   templateUrl: './party-admin-page.component.html',
   styleUrl: './party-admin-page.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PartyAdminPageComponent implements OnInit {
-  protected readonly answerOptions: readonly AnswerOption[] = [
-    { value: 'eens', label: 'Eens' },
-    { value: 'neutraal', label: 'Neutraal' },
-    { value: 'oneens', label: 'Oneens' },
-  ];
-
   protected readonly statements = signal<readonly PartyStatementAnswer[]>([]);
 
   protected readonly loading = signal(true);
@@ -116,14 +106,33 @@ export class PartyAdminPageComponent implements OnInit {
   }
 
   protected handleAnswer(statement: PartyStatementAnswer, answer: Answer): void {
-    if (statement.answer === answer || this.savingStatementId() !== null) {
+    if (statement.answer === answer) {
+      return;
+    }
+
+    this.saveAnswer(statement, answer);
+  }
+
+  protected handleExplanation(statement: PartyStatementAnswer, explanation: string | null): void {
+    if (statement.answer !== null) {
+      this.saveAnswer(statement, statement.answer, explanation);
+    }
+  }
+
+  protected handleLogout(): void {
+    this.authService.endSession();
+    void this.router.navigateByUrl('/login');
+  }
+
+  private saveAnswer(statement: PartyStatementAnswer, answer: Answer, explanation?: string | null): void {
+    if (this.savingStatementId() !== null) {
       return;
     }
 
     this.savingStatementId.set(statement.statementId);
     this.errorMessage.set(null);
 
-    this.partyAdminPageService.setAnswer(statement.statementId, answer).subscribe({
+    this.partyAdminPageService.setAnswer(statement.statementId, answer, explanation).subscribe({
       next: (saved) => {
         this.statements.update(statements => statements.map(item => (item.statementId === saved.statementId ? saved : item)));
         this.savingStatementId.set(null);
@@ -133,11 +142,6 @@ export class PartyAdminPageComponent implements OnInit {
         this.handleError(error, this.errorMessage);
       },
     });
-  }
-
-  protected handleLogout(): void {
-    this.authService.endSession();
-    void this.router.navigateByUrl('/login');
   }
 
   // Een verlopen of ongeldig token stuurt de gebruiker terug naar de loginpagina.

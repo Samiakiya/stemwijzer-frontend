@@ -1,8 +1,10 @@
 import type { Answer } from './answer.interface';
 
+// important: de kiezer heeft de stelling bij de weging aangevinkt; die telt dubbel mee.
 export interface AnswerSubmission {
   readonly statementId: number
   readonly answer: Answer
+  readonly important?: boolean
 }
 
 export interface PartyMatch {
@@ -23,6 +25,7 @@ export interface SpectrumPosition {
 
 export interface MatchingResult {
   readonly totalAnswers: number
+  readonly importantAnswers: number
   readonly matches: readonly PartyMatch[]
   readonly userPosition: SpectrumPosition
 }

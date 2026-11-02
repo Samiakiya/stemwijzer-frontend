@@ -1,0 +1,41 @@
+@if (errorMessage(); as message) {
+  <div class="screen">
+    <div aria-live="assertive" class="card state-card">
+      <span aria-hidden="true" class="state-icon state-icon-error">!</span>
+      <h2 class="state-title">Stelling niet beschikbaar</h2>
+      <p class="state-text">{{ message }}</p>
+      <button class="primary-action" type="button" (click)="retry.emit()">
+        <stw-quiz-icon name="refresh" />
+        Opnieuw proberen
+      </button>
+    </div>
+  </div>
+} @else if (statement(); as current) {
+  @switch (view()) {
+    @case ('parties') {
+      <stw-party-positions (back)="viewChanged.emit('question')" (continued)="viewChanged.emit('question')" [statement]="current" [total]="total()" />
+    }
+    @case ('explanation') {
+      <stw-statement-explanation (back)="viewChanged.emit('question')" [statement]="current" />
+    }
+    @default {
+      <stw-statement-question
+        (answered)="answered.emit($event)"
+        (showExplanation)="viewChanged.emit('explanation')"
+        (showParties)="viewChanged.emit('parties')"
+        [currentAnswer]="currentAnswer()"
+        [statement]="current"
+        [total]="total()"
+      />
+    }
+  }
+} @else {
+  <div class="screen">
+    <div aria-live="polite" class="card state-card">
+      <span aria-hidden="true" class="skeleton skeleton-short"></span>
+      <span aria-hidden="true" class="skeleton"></span>
+      <span aria-hidden="true" class="skeleton"></span>
+      <span class="visually-hidden">Stelling laden…</span>
+    </div>
+  </div>
+}

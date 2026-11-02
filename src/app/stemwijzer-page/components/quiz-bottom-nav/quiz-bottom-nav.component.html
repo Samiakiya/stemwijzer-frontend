@@ -1,0 +1,19 @@
+@if (active() !== null) {
+  <nav aria-label="StemWijzer-onderdelen" class="bottom-nav">
+    <div class="nav-inner">
+      @for (tab of tabs; track tab.id) {
+        <button
+          class="nav-tab"
+          type="button"
+          (click)="selected.emit(tab.id)"
+          [attr.aria-current]="active() === tab.id ? 'page' : null"
+          [class.nav-tab-active]="active() === tab.id"
+          [disabled]="tab.id === 'results' && !resultsAvailable()"
+        >
+          <stw-quiz-icon class="nav-icon" [name]="tab.icon" />
+          <span>{{ tab.label }}</span>
+        </button>
+      }
+    </div>
+  </nav>
+}

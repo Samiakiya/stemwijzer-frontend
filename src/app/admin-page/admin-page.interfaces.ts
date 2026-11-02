@@ -1,3 +1,5 @@
+import type { StatementDetails } from '../types/statement.interface';
+
 export type StatusFilter = 'all' | 'active' | 'inactive';
 
 export interface StatementListFilters {
@@ -9,7 +11,7 @@ export interface PartyListFilters {
   readonly search: string
 }
 
-export interface StatementFormValue {
+export interface StatementFormValue extends StatementDetails {
   readonly text: string
   readonly isActive: boolean
 }

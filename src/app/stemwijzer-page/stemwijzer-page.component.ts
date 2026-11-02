@@ -1,231 +1,277 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import type { OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import type { Answer } from '../types/answer.interface';
-import type { AnswerSummary, MatchingResult } from '../types/matching.interface';
+import type { AnswerSubmission, AnswerSummary, MatchingResult } from '../types/matching.interface';
 import type { PublicStatement } from '../types/statement.interface';
+import { AnswersOverviewComponent } from './components/answers-overview/answers-overview.component';
+import type { QuizTab } from './components/quiz-bottom-nav/quiz-bottom-nav.component';
+import { QuizBottomNavComponent } from './components/quiz-bottom-nav/quiz-bottom-nav.component';
+import { QuizHeaderComponent } from './components/quiz-header/quiz-header.component';
 import { ResultsComponent } from './components/results/results.component';
+import { StatementFlowComponent } from './components/statement-flow/statement-flow.component';
+import { StatementWeightingComponent } from './components/statement-weighting/statement-weighting.component';
+import type { AnswerState, QuizStatement, QuizView } from './quiz';
+import { partyInitials } from './quiz';
 import { StemwijzerPageService } from './stemwijzer-page.service';
 
-const FEEDBACK_DURATION_MS = 1800;
-const PROGRESS_MAX = 100;
+interface HeaderConfig {
+  readonly heading: string
+  readonly backLabel: string | null
+}
 
-const TOPICS: readonly { readonly keywords: readonly string[], readonly label: string }[] = [
-  { keywords: ['woning', 'wonen', 'hypotheek'], label: 'Wonen & huisvesting' },
-  { keywords: ['immigratie', 'asiel', 'vluchteling'], label: 'Migratie & asiel' },
-  { keywords: ['minimumloon', 'inkomen', 'belasting', 'bedrijven'], label: 'Economie & inkomen' },
-  { keywords: ['zorg', 'eigen risico'], label: 'Gezondheidszorg' },
-  { keywords: ['kernenergie', 'fossiele', 'stikstof', 'co₂', 'energie'], label: 'Klimaat & energie' },
-  { keywords: ['onderwijs', 'studenten', 'kinderopvang'], label: 'Onderwijs & kansen' },
-  { keywords: ['politie', 'criminaliteit', 'gezichtsherkenning'], label: 'Veiligheid & rechtsstaat' },
-  { keywords: ['referendum', 'europese unie'], label: 'Democratie & bestuur' },
-];
+const HEADERS: Record<QuizView, HeaderConfig> = {
+  question: { heading: 'Stelling Sessie', backLabel: 'Ga naar de vorige stelling' },
+  parties: { heading: 'Partijvergelijking', backLabel: 'Terug naar de stelling' },
+  explanation: { heading: 'Stelling Toelichting', backLabel: 'Terug naar de stelling' },
+  overview: { heading: 'Overzicht Keuzes', backLabel: null },
+  weighting: { heading: 'Gewogen Stellingen', backLabel: 'Terug naar het overzicht' },
+  results: { heading: 'Jouw uitslag', backLabel: null },
+};
 
+function isTab(view: QuizView): view is QuizTab {
+  return view === 'overview' || view === 'weighting' || view === 'results';
+}
+
+// Houdt de antwoorden van de kiezer alleen in het geheugen bij; er wordt niets opgeslagen.
 @Component({
   selector: 'stw-stemwijzer-page',
-  imports: [ResultsComponent],
+  imports: [AnswersOverviewComponent, QuizBottomNavComponent, QuizHeaderComponent, ResultsComponent, StatementFlowComponent, StatementWeightingComponent],
   templateUrl: './stemwijzer-page.component.html',
   styleUrl: './stemwijzer-page.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StemwijzerPageComponent implements OnInit {
+  protected readonly view = signal<QuizView>('question');
+
+  protected readonly statements = signal<readonly QuizStatement[]>([]);
+
   protected readonly currentIndex = signal(0);
-
-  protected readonly statement = signal<PublicStatement | null>(null);
-
-  protected readonly loading = signal(true);
 
   protected readonly errorMessage = signal<string | null>(null);
 
-  protected readonly explanationVisible = signal(false);
+  protected readonly answers = signal<ReadonlyMap<number, AnswerState>>(new Map());
 
-  protected readonly partiesVisible = signal(false);
-
-  protected readonly feedbackMessage = signal<string | null>(null);
-
-  protected readonly submittingResults = signal(false);
-
-  protected readonly matchingError = signal<string | null>(null);
+  protected readonly important = signal<ReadonlySet<number>>(new Set());
 
   protected readonly matchingResult = signal<MatchingResult | null>(null);
 
-  protected readonly totalStatements = signal(1);
+  protected readonly submitting = signal(false);
 
-  protected readonly progressLabel = computed(() => `${this.currentIndex() + 1} van ${this.totalStatements()}`);
+  protected readonly matchingError = signal<string | null>(null);
 
-  protected readonly progressEnd = computed(() => ((this.currentIndex() + 1) / this.totalStatements()) * PROGRESS_MAX);
+  protected readonly total = computed(() => Math.max(this.statements().length, 1));
 
-  protected readonly topicTitle = computed(() => {
-    const statementText = this.statement()?.text.toLowerCase() ?? '';
-    const topic = TOPICS.find(item => item.keywords.some(keyword => statementText.includes(keyword)));
+  protected readonly current = computed(() => this.loaded().get(this.currentIndex()) ?? null);
 
-    return topic?.label ?? 'Politiek & samenleving';
+  protected readonly currentAnswer = computed(() => {
+    const statement = this.current();
+
+    return statement === null ? null : this.answers().get(statement.id) ?? null;
+  });
+
+  protected readonly header = computed(() => HEADERS[this.view()]);
+
+  protected readonly backDisabled = computed(() => this.view() === 'question' && this.currentIndex() === 0 && !this.returnToOverview());
+
+  protected readonly activeTab = computed<QuizTab | null>(() => {
+    const view = this.view();
+
+    return isTab(view) ? view : null;
   });
 
   protected readonly answerSummary = computed<AnswerSummary>(() => {
-    this.answerRevision();
-
-    const values = [...this.answers.values()];
-    const skipped = this.skippedStatementIds.size;
+    const states = [...this.answers().values()];
 
     return {
-      agree: values.filter(answer => answer === 'eens').length,
-      neutral: values.filter(answer => answer === 'neutraal').length - skipped,
-      disagree: values.filter(answer => answer === 'oneens').length,
-      skipped,
-      total: this.totalStatements(),
+      agree: states.filter(state => state === 'eens').length,
+      neutral: states.filter(state => state === 'neutraal').length,
+      disagree: states.filter(state => state === 'oneens').length,
+      skipped: states.filter(state => state === 'overgeslagen').length,
+      total: this.total(),
     };
   });
 
+  // Afkortingen uit de geladen stellingen, voor de labels in het spectrum.
+  protected readonly partyLabels = computed(() => {
+    const labels = new Map<number, string>();
+
+    for (const statement of this.loaded().values()) {
+      for (const party of statement.partyAnswers) {
+        labels.set(party.partyId, partyInitials(party.partyName, party.abbreviation));
+      }
+    }
+
+    return labels;
+  });
+
+  private readonly loaded = signal<ReadonlyMap<number, PublicStatement>>(new Map());
+
+  // Na het aanpassen van één antwoord vanuit het overzicht gaat de kiezer daarheen terug.
+  private readonly returnToOverview = signal(false);
+
   private readonly service = inject(StemwijzerPageService);
-
-  private readonly answers = new Map<number, Answer>();
-
-  private readonly skippedStatementIds = new Set<number>();
-
-  private readonly answerRevision = signal(0);
 
   public ngOnInit(): void {
     this.service.getAllStatements().subscribe({
       next: (statements) => {
-        const activeCount = statements.filter(statement => statement.isActive).length;
-
-        this.totalStatements.set(Math.max(activeCount, 1));
+        this.statements.set(statements
+          .filter(statement => statement.isActive)
+          .sort((left, right) => left.id - right.id)
+          .map((statement, index) => ({ id: statement.id, index, text: statement.text, title: statement.title, theme: statement.theme })));
       },
     });
-    this.loadStatement(0);
+    this.showStatement(0);
   }
 
-  protected goBack(): void {
-    const previousIndex = this.currentIndex() - 1;
+  protected handleBack(): void {
+    const view = this.view();
 
-    if (previousIndex >= 0) {
-      this.loadStatement(previousIndex);
+    if (view === 'parties' || view === 'explanation') {
+      this.view.set('question');
     }
+    else if (view === 'weighting') {
+      this.view.set('overview');
+    }
+    else if (this.returnToOverview()) {
+      this.returnToOverview.set(false);
+      this.view.set('overview');
+    }
+    else if (this.currentIndex() > 0) {
+      this.showStatement(this.currentIndex() - 1);
+    }
+  }
+
+  protected changeView(view: QuizView): void {
+    this.view.set(view);
+    window.scrollTo({ top: 0 });
   }
 
   protected recordAnswer(answer: Answer | null): void {
-    const currentStatement = this.statement();
+    const statement = this.current();
 
-    if (currentStatement === null) {
+    if (statement === null) {
       return;
     }
 
-    if (answer === null) {
-      this.answers.set(currentStatement.id, 'neutraal');
-      this.skippedStatementIds.add(currentStatement.id);
-      this.showFeedback('Stelling overgeslagen');
-    }
-    else {
-      this.answers.set(currentStatement.id, answer);
-      this.skippedStatementIds.delete(currentStatement.id);
-      this.showFeedback(this.feedbackFor(answer));
-    }
-
-    this.answerRevision.update(revision => revision + 1);
+    this.answers.update(answers => new Map(answers).set(statement.id, answer ?? 'overgeslagen'));
+    this.matchingResult.set(null);
 
     const nextIndex = this.currentIndex() + 1;
 
-    if (nextIndex < this.totalStatements()) {
-      this.loadStatement(nextIndex);
+    if (this.returnToOverview() || nextIndex >= this.total()) {
+      this.returnToOverview.set(false);
+      this.changeView('overview');
 
       return;
     }
 
-    this.submitMatching();
+    this.showStatement(nextIndex);
+  }
+
+  protected editStatement(index: number): void {
+    this.returnToOverview.set(true);
+    this.showStatement(index);
   }
 
   protected retry(): void {
-    this.loadStatement(this.currentIndex());
+    this.showStatement(this.currentIndex());
   }
 
-  protected retryMatching(): void {
+  protected selectTab(tab: QuizTab): void {
+    this.changeView(tab);
+  }
+
+  protected toggleImportant(statementId: number): void {
+    this.important.update((important) => {
+      const next = new Set(important);
+
+      if (!next.delete(statementId)) {
+        next.add(statementId);
+      }
+
+      return next;
+    });
+    this.matchingResult.set(null);
+  }
+
+  protected skipWeighting(): void {
+    this.important.set(new Set());
     this.submitMatching();
   }
 
-  protected restartQuestionnaire(): void {
-    this.answers.clear();
-    this.skippedStatementIds.clear();
-    this.answerRevision.update(revision => revision + 1);
+  protected submitMatching(): void {
+    const answers = this.answers();
+    const important = this.important();
+
+    const submission: AnswerSubmission[] = this.statements().map(statement => ({
+      statementId: statement.id,
+      answer: this.toSubmittedAnswer(answers.get(statement.id)),
+      important: important.has(statement.id),
+    }));
+
+    this.submitting.set(true);
+    this.matchingError.set(null);
+
+    this.service.getMatchingResults(submission).subscribe({
+      next: (result) => {
+        this.submitting.set(false);
+        this.matchingResult.set(result);
+        this.changeView('results');
+      },
+      error: () => {
+        this.submitting.set(false);
+        this.matchingError.set('De uitslag kon niet worden berekend. Controleer de verbinding en probeer het opnieuw.');
+      },
+    });
+  }
+
+  protected restart(): void {
+    this.answers.set(new Map());
+    this.important.set(new Set());
     this.matchingResult.set(null);
     this.matchingError.set(null);
-    this.feedbackMessage.set(null);
-    this.loadStatement(0);
+    this.returnToOverview.set(false);
+    this.showStatement(0);
   }
 
-  protected toggleExplanation(): void {
-    this.explanationVisible.update(visible => !visible);
-    this.partiesVisible.set(false);
-  }
-
-  protected toggleParties(): void {
-    this.partiesVisible.update(visible => !visible);
-    this.explanationVisible.set(false);
-  }
-
-  protected partyNames(answer: Answer): string {
-    const names = this.statement()?.partyAnswers
-      .filter(partyAnswer => partyAnswer.answer === answer)
-      .map(partyAnswer => partyAnswer.partyName) ?? [];
-
-    return names.length > 0 ? names.join(', ') : 'Nog geen partijstandpunten';
-  }
-
-  private loadStatement(index: number): void {
-    this.loading.set(true);
+  private showStatement(index: number): void {
     this.errorMessage.set(null);
-    this.explanationVisible.set(false);
-    this.partiesVisible.set(false);
+    this.currentIndex.set(index);
+    this.changeView('question');
+
+    if (this.loaded().has(index)) {
+      this.prefetch(index + 1);
+
+      return;
+    }
 
     this.service.getStatement(index).subscribe({
       next: (statement) => {
-        this.currentIndex.set(index);
-        this.statement.set(statement);
-        this.loading.set(false);
+        this.loaded.update(loaded => new Map(loaded).set(index, statement));
+        this.prefetch(index + 1);
       },
       error: () => {
-        this.loading.set(false);
-        this.errorMessage.set('De stelling kon niet worden geladen. Controleer de verbinding en probeer het opnieuw.');
+        if (this.currentIndex() === index) {
+          this.errorMessage.set('De stelling kon niet worden geladen. Controleer de verbinding en probeer het opnieuw.');
+        }
       },
     });
   }
 
-  private feedbackFor(answer: Answer): string {
-    if (answer === 'eens') {
-      return 'Eens geregistreerd';
+  // Haalt de volgende stelling alvast op, zodat die direct verschijnt na het antwoorden.
+  private prefetch(index: number): void {
+    if (index >= this.statements().length || this.loaded().has(index)) {
+      return;
     }
 
-    if (answer === 'neutraal') {
-      return 'Geen van beide gekozen';
-    }
-
-    return 'Oneens geregistreerd';
-  }
-
-  private submitMatching(): void {
-    const answers = [...this.answers.entries()].map(([statementId, answer]) => ({ statementId, answer }));
-
-    this.submittingResults.set(true);
-    this.matchingError.set(null);
-
-    this.service.getMatchingResults(answers).subscribe({
-      next: (result) => {
-        this.submittingResults.set(false);
-        this.matchingResult.set(result);
-      },
-      error: () => {
-        this.submittingResults.set(false);
-        this.matchingError.set('De uitslag kon niet worden berekend. Probeer het opnieuw.');
+    this.service.getStatement(index).subscribe({
+      next: (statement) => {
+        this.loaded.update(loaded => new Map(loaded).set(index, statement));
       },
     });
   }
 
-  private showFeedback(message: string): void {
-    this.feedbackMessage.set(message);
-
-    window.setTimeout(() => {
-      if (this.feedbackMessage() === message) {
-        this.feedbackMessage.set(null);
-      }
-    }, FEEDBACK_DURATION_MS);
+  private toSubmittedAnswer(state: AnswerState | undefined): Answer {
+    return state === 'eens' || state === 'oneens' ? state : 'neutraal';
   }
 }

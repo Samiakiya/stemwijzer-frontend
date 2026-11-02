@@ -5,6 +5,7 @@ export interface PartyStatementAnswer {
   readonly statementId: number
   readonly text: string
   readonly answer: Answer | null
+  readonly explanation: string | null
 }
 
 export interface PartyStatementsResponse {
